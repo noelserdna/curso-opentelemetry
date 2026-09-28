@@ -1,0 +1,55 @@
+# Configuración del OpenTelemetry Collector (módulos 7 y 8).
+# Un Collector es una tubería: receivers -> processors -> exporters.
+
+# 1. RECEIVERS: por dónde entra la telemetría.
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318 # 0.0.0.0 para que se pueda llegar desde fuera del contenedor
+
+# 2. PROCESSORS: qué se hace con ella por el camino.
+processors:
+  # Agrupa los datos en lotes antes de enviarlos.
+  batch:
+    timeout: 1s
+
+  # RETO M7: descomenta este procesador y añádelo al pipeline de trazas
+  # para que el email del cliente nunca salga de tu infraestructura.
+  # attributes/privacidad:
+  #   actions:
+  #     - key: usuario.email
+  #       action: delete
+
+# 3. EXPORTERS: a dónde se envía.
+exporters:
+  otlp_grpc/jaeger:
+    endpoint: jaeger-backend:4317
+    tls:
+      insecure: true
+
+  otlp_http/lgtm:
+    endpoint: http://lgtm-backend:4318
+
+  # Imprime un resumen en los logs del propio Collector:
+  #   docker compose logs -f collector
+  debug:
+    verbosity: basic
+
+# 4. PIPELINES: cómo se conectan las piezas, una tubería por señal.
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_grpc/jaeger, otlp_http/lgtm, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_http/lgtm]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_http/lgtm]

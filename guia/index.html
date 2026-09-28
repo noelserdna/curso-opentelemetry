@@ -1,0 +1,2307 @@
+<title>OpenTelemetry práctico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root {
+    --fondo: #f4f6f9;
+    --fondo-2: #e9edf2;
+    --superficie: #ffffff;
+    --tinta: #17212b;
+    --tinta-suave: #54616f;
+    --linea: #d6dde5;
+    --codigo-fondo: #e8edf3;
+    --codigo-tinta: #1b2733;
+    --acento: #b8400d;
+    --acento-suave: #fbe9df;
+    --traza: #1f5fa8;
+    --traza-suave: #e1ecf8;
+    --metrica: #1f6f45;
+    --metrica-suave: #dff1e7;
+    --log: #6a47ad;
+    --log-suave: #ece6f7;
+    --serie-1: #2a78d6;
+    --serie-2: #eb6834;
+    --gris-dato: #b4bcc6;
+    --gris-fuerte: #7b8794;
+    --antes: #86b6ef;
+    --despues: #256abf;
+    --critico: #d03b3b;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --titulos: "Archivo", "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --fondo: #0f151c;
+      --fondo-2: #19222c;
+      --superficie: #151d26;
+      --tinta: #e4e9ef;
+      --tinta-suave: #98a6b5;
+      --linea: #2a3643;
+      --codigo-fondo: #1b2530;
+      --codigo-tinta: #dde4ec;
+      --acento: #f6925a;
+      --acento-suave: #3a2418;
+      --traza: #7fb4ee;
+      --traza-suave: #172a40;
+      --metrica: #6cc797;
+      --metrica-suave: #14301f;
+      --log: #b7a1ec;
+      --log-suave: #261d3d;
+      --serie-1: #3987e5;
+      --serie-2: #d95926;
+      --gris-dato: #4a5664;
+      --gris-fuerte: #8a97a6;
+      --antes: #184f95;
+      --despues: #6da7ec;
+      --critico: #d03b3b;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --fondo: #0f151c;
+    --fondo-2: #19222c;
+    --superficie: #151d26;
+    --tinta: #e4e9ef;
+    --tinta-suave: #98a6b5;
+    --linea: #2a3643;
+    --codigo-fondo: #1b2530;
+    --codigo-tinta: #dde4ec;
+    --acento: #f6925a;
+    --acento-suave: #3a2418;
+    --traza: #7fb4ee;
+    --traza-suave: #172a40;
+    --metrica: #6cc797;
+    --metrica-suave: #14301f;
+    --log: #b7a1ec;
+    --log-suave: #261d3d;
+    --serie-1: #3987e5;
+    --serie-2: #d95926;
+    --gris-dato: #4a5664;
+    --gris-fuerte: #8a97a6;
+    --antes: #184f95;
+    --despues: #6da7ec;
+    --critico: #d03b3b;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--fondo);
+    color: var(--tinta);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .pagina {
+    display: grid;
+    grid-template-columns: 236px minmax(0, 1fr);
+    gap: 48px;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-inline: 24px;
+    padding-block: 32px 96px;
+  }
+
+  /* ---------- Índice ---------- */
+  .indice {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 24px);
+    align-self: start;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    font-size: 14px;
+  }
+  .indice summary {
+    font-family: var(--titulos);
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    display: none;
+  }
+  .indice summary::-webkit-details-marker { display: none; }
+  .indice-progreso {
+    margin: 0 0 16px;
+    color: var(--tinta-suave);
+    font-variant-numeric: tabular-nums;
+  }
+  .indice-grupo {
+    margin: 20px 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--tinta-suave);
+  }
+  .indice ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+  .indice a {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    padding: 5px 10px;
+    border-radius: 6px;
+    color: var(--tinta);
+    text-decoration: none;
+  }
+  .indice a:hover { background: var(--fondo-2); }
+  .indice a.actual { background: var(--fondo-2); font-weight: 600; }
+  .indice .num {
+    flex: none;
+    width: 26px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--tinta-suave);
+  }
+  .indice a.completado .num { color: var(--metrica); }
+  .indice a.completado .num::after { content: " ✓"; }
+
+  /* ---------- Contenido ---------- */
+  main { min-width: 0; max-width: 760px; }
+
+  h1, h2, h3 { font-family: var(--titulos); text-wrap: balance; line-height: 1.2; }
+  h1 { font-size: clamp(34px, 5vw, 46px); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 12px; }
+  h2 { font-size: 27px; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
+  h3 { font-size: 17px; font-weight: 600; margin: 32px 0 8px; }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 14px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  a { color: var(--traza); text-underline-offset: 3px; }
+  strong { font-weight: 600; }
+  :focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+
+  code, pre, kbd { font-family: var(--mono); font-size: 0.875em; }
+  :not(pre) > code {
+    background: var(--codigo-fondo);
+    color: var(--codigo-tinta);
+    padding: 1px 5px;
+    border-radius: 4px;
+    overflow-wrap: anywhere;
+  }
+  kbd {
+    border: 1px solid var(--linea);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 0 5px;
+    background: var(--superficie);
+  }
+
+  .cabecera { padding-bottom: 28px; border-bottom: 1px solid var(--linea); margin-bottom: 40px; }
+  .entradilla { font-size: 19px; line-height: 1.5; color: var(--tinta-suave); max-width: 60ch; margin-bottom: 20px; }
+  .datos { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+  .datos li { margin: 0; }
+  .datos b { font-family: var(--titulos); font-size: 20px; font-weight: 700; margin-right: 6px; font-variant-numeric: tabular-nums; }
+
+  .sesion {
+    margin: 72px 0 8px;
+    padding-top: 20px;
+    border-top: 2px solid var(--tinta);
+  }
+  .sesion-etiqueta {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--tinta-suave); margin: 0 0 4px;
+  }
+  .sesion h2 { font-size: 31px; }
+  .sesion p { color: var(--tinta-suave); margin: 8px 0 0; }
+
+  section { margin-top: 56px; }
+  .modulo-cabecera {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 4px 16px;
+    align-items: start;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--linea);
+    margin-bottom: 18px;
+  }
+  .modulo-num {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--superficie);
+    background: var(--tinta);
+    border-radius: 5px;
+    padding: 3px 8px;
+    margin-top: 4px;
+  }
+  .modulo-meta {
+    grid-column: 2 / -1;
+    display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center;
+    font-size: 14px; color: var(--tinta-suave);
+  }
+  .hecho {
+    display: inline-flex; gap: 6px; align-items: center;
+    font-size: 14px; color: var(--tinta-suave); cursor: pointer; margin-top: 6px; white-space: nowrap;
+  }
+  .hecho input { width: 17px; height: 17px; accent-color: var(--metrica); margin: 0; }
+
+  .senal {
+    display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+    padding: 1px 8px; border-radius: 99px;
+  }
+  .senal.traza { color: var(--traza); background: var(--traza-suave); }
+  .senal.metrica { color: var(--metrica); background: var(--metrica-suave); }
+  .senal.log { color: var(--log); background: var(--log-suave); }
+
+  /* ---------- Bloques de código ---------- */
+  .orden, .salida { position: relative; margin: 0 0 14px; }
+  .orden pre, .salida pre, .codigo pre {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 7px;
+    background: var(--codigo-fondo);
+    color: var(--codigo-tinta);
+    overflow-x: auto;
+    line-height: 1.55;
+    font-size: 13.5px;
+    tab-size: 2;
+  }
+  .orden pre { padding-right: 84px; border-left: 3px solid var(--tinta); }
+  .orden pre code::before { content: "$ "; color: var(--tinta-suave); user-select: none; }
+  .codigo { margin: 0 0 14px; }
+  .salida pre { background: transparent; border: 1px solid var(--linea); color: var(--tinta); }
+  .rotulo {
+    display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--tinta-suave); margin-bottom: 4px;
+  }
+  .copiar {
+    position: absolute; top: 7px; right: 7px;
+    font: 500 12px var(--sans);
+    color: var(--tinta);
+    background: var(--superficie);
+    border: 1px solid var(--linea);
+    border-radius: 5px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .copiar:hover { border-color: var(--tinta-suave); }
+  .c { color: var(--tinta-suave); }
+  .r { color: var(--acento); font-weight: 500; }
+
+  /* ---------- Avisos, reto y solución ---------- */
+  .nota {
+    margin: 0 0 14px;
+    padding: 2px 0 2px 14px;
+    border-left: 3px solid var(--linea);
+    color: var(--tinta-suave);
+    font-size: 15px;
+  }
+  .nota strong { color: var(--tinta); }
+  .reto {
+    margin: 32px 0 14px;
+    padding: 18px 20px 6px;
+    border: 1px solid var(--acento);
+    border-radius: 9px;
+    background: var(--acento-suave);
+  }
+  .reto h3 { margin: 0 0 8px; color: var(--acento); }
+  .reto :not(pre) > code { background: var(--superficie); }
+  details.solucion {
+    margin: 0 0 14px;
+    border: 1px solid var(--linea);
+    border-radius: 9px;
+    background: var(--superficie);
+  }
+  details.solucion summary {
+    padding: 11px 16px; cursor: pointer; font-weight: 600; font-size: 15px;
+  }
+  details.solucion > div { padding: 0 16px 4px; border-top: 1px solid var(--linea); padding-top: 14px; }
+
+  /* ---------- Tablas ---------- */
+  .tabla { overflow-x: auto; margin: 0 0 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--linea); }
+  th { font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--tinta-suave); white-space: nowrap; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-right: 0; }
+  tr:last-child td { border-bottom: 0; }
+
+  dl { margin: 0 0 14px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 20px; }
+  dt { font-weight: 600; }
+  dd { margin: 0; color: var(--tinta-suave); }
+
+  /* ---------- Diagramas ---------- */
+  figure { margin: 22px 0; }
+  .lienzo { overflow-x: auto; border: 1px solid var(--linea); border-radius: 9px; background: var(--superficie); padding: 14px; }
+  .dg { display: block; width: 100%; min-width: 660px; height: auto; color: var(--tinta); font-family: var(--sans); }
+  .dg .caja { fill: var(--superficie); stroke: var(--tinta); stroke-width: 1.25; }
+  .dg .zona { fill: var(--fondo); stroke: var(--linea); stroke-width: 1.25; }
+  .dg .destacada { fill: var(--acento-suave); stroke: var(--acento); stroke-width: 1.5; }
+  .dg .pendiente { fill: var(--acento-suave); stroke: var(--acento); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  .dg .linea { fill: none; stroke: var(--tinta); stroke-width: 1.25; }
+  .dg .guia { fill: none; stroke: var(--linea); stroke-width: 1; }
+  .dg .punta { fill: var(--tinta); }
+  .dg text { fill: var(--tinta); font-size: 13px; }
+  .dg .fuerte { font-weight: 600; }
+  .dg .menor { font-size: 11.5px; fill: var(--tinta-suave); }
+  .dg .mono { font-family: var(--mono); font-size: 12px; }
+  .dg .en-acento { fill: var(--acento); font-weight: 600; }
+  .dg .menor.fuerte { fill: var(--tinta); }
+  .dg .chico { font-size: 11px; }
+  .dg .mini { font-size: 10px; }
+  .dg .opcional { fill: var(--superficie); stroke: var(--tinta-suave); stroke-width: 1.25; stroke-dasharray: 5 4; }
+  .dg .eje { fill: none; stroke: var(--tinta-suave); stroke-width: 1; }
+  .dg .enlace { fill: none; stroke: var(--acento); stroke-width: 1.5; }
+  .dg .punta-acento, .dg .punto-acento { fill: var(--acento); }
+  .dg .aspa { fill: none; stroke: #ffffff; stroke-width: 1.75; stroke-linecap: round; }
+  .dg .critico { fill: var(--critico); }
+  .dg .s-traza { fill: var(--traza); }
+  .dg .s-metrica { fill: none; stroke: var(--metrica); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .dg .s-log { fill: var(--log); }
+
+  /* Marcas de datos: el color identifica, el texto va siempre en tinta */
+  .dg .serie-1 { fill: var(--serie-1); }
+  .dg .serie-2 { fill: var(--serie-2); }
+  .dg .apagada { fill: var(--gris-dato); }
+  .dg .antes { fill: var(--antes); }
+  .dg .despues { fill: var(--despues); }
+  .dg .trazo-1 { fill: none; stroke: var(--serie-1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .dg .lavado-1 { fill: var(--serie-1); opacity: 0.1; }
+  .dg .punto-1 { fill: var(--serie-1); stroke: var(--superficie); stroke-width: 2; }
+  .dg .t-resto.si { fill: var(--gris-fuerte); }
+  .dg .t-lenta.si { fill: var(--serie-1); }
+  .dg .t-error.si { fill: var(--serie-2); }
+  .dg .no { fill: none; stroke-width: 1.5; }
+  .dg .t-resto.no { stroke: var(--gris-dato); }
+  .dg .t-lenta.no { stroke: var(--serie-1); }
+  .dg .t-error.no { stroke: var(--serie-2); }
+  .dg .toque { fill: transparent; stroke: none; }
+  .dg .marca { outline: none; }
+  .dg .marca:hover .resalta, .dg .marca:focus-visible .resalta { filter: brightness(1.18); }
+  .dg .marca:focus-visible .toque { stroke: var(--tinta); stroke-width: 1.5; }
+
+  .globo {
+    position: fixed; z-index: 20; pointer-events: none;
+    max-width: 280px; padding: 7px 11px; border-radius: 7px;
+    background: var(--tinta); color: var(--fondo);
+    font-size: 13px; line-height: 1.4;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  }
+  .globo strong { display: block; font-weight: 600; }
+  .globo span { opacity: 0.82; }
+
+  details.datos { margin-top: 8px; font-size: 14px; }
+  details.datos summary { cursor: pointer; color: var(--tinta-suave); padding: 4px 0; }
+  details.datos .tabla { margin: 8px 0 0; max-width: 460px; }
+  details.datos table { font-size: 14px; }
+  details.datos th, details.datos td { padding: 5px 12px 5px 0; }
+  figcaption { margin-top: 8px; font-size: 14px; color: var(--tinta-suave); max-width: 66ch; }
+
+  .pie { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--linea); font-size: 14px; color: var(--tinta-suave); }
+
+  /* ---------- Pantallas estrechas ---------- */
+  @media (max-width: 900px) {
+    .pagina { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-inline: 16px; padding-block: 20px 72px; }
+    .indice {
+      position: static; max-height: none;
+      border: 1px solid var(--linea); border-radius: 9px; background: var(--superficie); padding: 12px 14px;
+    }
+    .indice summary { display: block; }
+    .indice summary::after { content: " ▾"; color: var(--tinta-suave); }
+    .indice[open] summary { margin-bottom: 12px; }
+    .modulo-cabecera { grid-template-columns: auto minmax(0, 1fr); }
+    .hecho { grid-column: 1 / -1; }
+    .modulo-meta { grid-column: 1 / -1; }
+    h2 { font-size: 23px; }
+    .sesion h2 { font-size: 26px; }
+    dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+    dd { margin-bottom: 10px; }
+  }
+</style>
+
+<div class="globo" id="globo" role="status" hidden><strong></strong><span></span></div>
+
+<div class="pagina">
+
+<details class="indice" id="indice" open>
+  <summary>Índice del curso</summary>
+  <p class="indice-progreso" id="progreso" aria-live="polite">0 de 9 módulos hechos</p>
+  <ul>
+    <li><a href="#idea"><span class="num">·</span>La idea central</a></li>
+    <li><a href="#preparacion"><span class="num">·</span>Preparación</a></li>
+  </ul>
+  <p class="indice-grupo">Sesión 1 · Trazas</p>
+  <ul>
+    <li><a href="#m0" data-modulo="m0"><span class="num">M0</span>Qué es OpenTelemetry</a></li>
+    <li><a href="#m1" data-modulo="m1"><span class="num">M1</span>Tu primer span</a></li>
+    <li><a href="#m2" data-modulo="m2"><span class="num">M2</span>Auto-instrumentación</a></li>
+    <li><a href="#m3" data-modulo="m3"><span class="num">M3</span>Spans manuales</a></li>
+    <li><a href="#m4" data-modulo="m4"><span class="num">M4</span>Traza distribuida</a></li>
+  </ul>
+  <p class="indice-grupo">Sesión 2 · Tres señales</p>
+  <ul>
+    <li><a href="#m5" data-modulo="m5"><span class="num">M5</span>Métricas</a></li>
+    <li><a href="#m6" data-modulo="m6"><span class="num">M6</span>Logs</a></li>
+    <li><a href="#m7" data-modulo="m7"><span class="num">M7</span>Collector</a></li>
+    <li><a href="#m8" data-modulo="m8"><span class="num">M8</span>Sampling</a></li>
+  </ul>
+  <p class="indice-grupo">Consulta</p>
+  <ul>
+    <li><a href="#sin-datos"><span class="num">·</span>No veo mis datos</a></li>
+    <li><a href="#api"><span class="num">·</span>API vigente</a></li>
+    <li><a href="#instructor"><span class="num">·</span>Para quien imparte</a></li>
+  </ul>
+</details>
+
+<main>
+
+<header class="cabecera">
+  <h1>OpenTelemetry práctico</h1>
+  <p class="entradilla">Instrumenta una mini tienda con Node.js y TypeScript. Verás sus trazas, métricas y logs primero en la terminal, después en Jaeger y en Grafana, y al final detrás de tu propio Collector.</p>
+  <ul class="datos">
+    <li><b>2</b>sesiones de 105 minutos</li>
+    <li><b>8</b>módulos con reto y solución</li>
+    <li><b>3</b>señales: trazas, métricas y logs</li>
+  </ul>
+</header>
+
+<!-- ======================= IDEA CENTRAL ======================= -->
+<section id="idea" style="margin-top:0">
+  <h2>La idea central</h2>
+  <p style="margin-top:12px">Tu app envía siempre la telemetría al mismo sitio: <code>http://localhost:4318</code>, con el protocolo OTLP. A lo largo del curso cambia quién escucha en ese puerto. El código de la app no cambia.</p>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 300" role="img" aria-label="La app envía OTLP al puerto 4318. En la sesión 1 escucha Jaeger, en la sesión 2 Grafana LGTM y después un Collector propio que reenvía a los dos.">
+        <defs>
+          <marker id="f1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker>
+        </defs>
+        <rect class="caja" x="16" y="112" width="168" height="76" rx="7"/>
+        <text class="fuerte" x="100" y="146" text-anchor="middle">Tu app</text>
+        <text class="menor" x="100" y="166" text-anchor="middle">con el SDK de OpenTelemetry</text>
+
+        <line class="linea" x1="184" y1="150" x2="318" y2="150"/>
+        <text class="fuerte" x="251" y="140" text-anchor="middle">OTLP</text>
+        <text class="mono" x="251" y="168" text-anchor="middle">localhost:4318</text>
+        <circle class="punta" cx="322" cy="150" r="4"/>
+
+        <polyline class="linea" points="322,150 342,150 342,56 372,56" marker-end="url(#f1)"/>
+        <line class="linea" x1="322" y1="150" x2="372" y2="150" marker-end="url(#f1)"/>
+        <polyline class="linea" points="322,150 342,150 342,244 372,244" marker-end="url(#f1)"/>
+
+        <rect class="caja" x="374" y="28" width="160" height="56" rx="7"/>
+        <text class="fuerte" x="454" y="52" text-anchor="middle">Jaeger</text>
+        <text class="menor" x="454" y="70" text-anchor="middle">M2 · M3 · M4</text>
+        <text class="menor" x="548" y="60">solo trazas</text>
+
+        <rect class="caja" x="374" y="122" width="160" height="56" rx="7"/>
+        <text class="fuerte" x="454" y="146" text-anchor="middle">Grafana LGTM</text>
+        <text class="menor" x="454" y="164" text-anchor="middle">M5 · M6</text>
+        <text class="menor" x="548" y="154">trazas, métricas y logs</text>
+
+        <rect class="destacada" x="374" y="216" width="160" height="56" rx="7"/>
+        <text class="fuerte" x="454" y="240" text-anchor="middle">Tu Collector</text>
+        <text class="menor" x="454" y="258" text-anchor="middle">M7 · M8</text>
+
+        <polyline class="linea" points="534,244 566,244 566,218 600,218" marker-end="url(#f1)"/>
+        <polyline class="linea" points="534,244 566,244 566,270 600,270" marker-end="url(#f1)"/>
+        <rect class="caja" x="602" y="200" width="142" height="36" rx="7"/>
+        <text x="673" y="223" text-anchor="middle">Jaeger</text>
+        <rect class="caja" x="602" y="252" width="142" height="36" rx="7"/>
+        <text x="673" y="275" text-anchor="middle">Grafana LGTM</text>
+      </svg>
+    </div>
+    <figcaption>La app no sabe qué herramienta recibe sus datos. Pasar de Jaeger a Grafana es arrancar otro contenedor.</figcaption>
+  </figure>
+
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Etapa</th><th>Comando</th><th>Dónde mirar</th></tr></thead>
+      <tbody>
+        <tr><td>Sesión 1, M2 a M4</td><td><code>npm run infra:jaeger</code></td><td><a href="http://localhost:16686">localhost:16686</a></td></tr>
+        <tr><td>Sesión 2, M5 y M6</td><td><code>npm run infra:lgtm</code></td><td><a href="http://localhost:3000">localhost:3000</a></td></tr>
+        <tr><td>Sesión 2, M7 y M8</td><td><code>npm run infra:collector</code></td><td>Las dos anteriores</td></tr>
+        <tr><td>Parar todo</td><td><code>npm run infra:down</code></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="nota">Cada comando <code>infra:…</code> para primero lo que hubiera arrancado, porque todas las etapas usan los mismos puertos. Los datos se guardan en memoria: al cambiar de etapa se empieza de cero.</p>
+</section>
+
+<!-- ======================= PREPARACIÓN ======================= -->
+<section id="preparacion">
+  <h2>Preparación</h2>
+  <p style="margin-top:12px">Hazla antes de clase: descarga unos 2 GB. Necesitas Node.js 22 o superior y Docker Desktop (u OrbStack) arrancado.</p>
+
+  <h3>1. Instala las dependencias</h3>
+  <div class="orden"><pre><code>npm ci</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p class="nota">Usa <code>npm ci</code> y no <code>npm install</code>: instala las versiones exactas con las que se ha probado el curso.</p>
+
+  <h3>2. Descarga las imágenes de Docker</h3>
+  <div class="orden"><pre><code>docker compose --profile "*" pull</code></pre><button class="copiar" type="button">Copiar</button></div>
+
+  <h3>3. Comprueba tu equipo</h3>
+  <div class="orden"><pre><code>npm run doctor</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <div class="salida"><span class="rotulo">Qué debes ver</span><pre>  [ OK ]  Node.js 24.12.0
+  [ OK ]  Dependencias instaladas (OpenTelemetry SDK 0.222.0)
+  [ OK ]  Docker 29.4.0
+  [ OK ]  Imágenes de Jaeger, Grafana LGTM y Collector descargadas
+  [ OK ]  Puerto 8181 libre
+  [ OK ]  Puerto 8182 libre
+  [ OK ]  Puerto 4317 libre
+  [ OK ]  Puerto 4318 libre
+  [ OK ]  Puerto 16686 libre
+  [ OK ]  Puerto 3000 libre
+  [ OK ]  La auto-instrumentación engancha: spans de http y express recibidos
+
+Todo listo. Ya puedes empezar con `npm run m1`.</pre></div>
+  <p>Si algo falla, <code>doctor</code> te dice qué es y cómo arreglarlo.</p>
+
+  <h3>Cómo se trabaja cada módulo</h3>
+  <ul>
+    <li>Usa <strong>dos terminales</strong>: una con la app arrancada y otra para lanzarle peticiones.</li>
+    <li>Para parar una app, <kbd>Ctrl</kbd> + <kbd>C</kbd>. Solo puede haber un módulo arrancado a la vez.</li>
+    <li><code>npm run probar m2</code> (o <code>m3</code>, <code>m4</code>, <code>m6</code>) lanza las peticiones de ese módulo y muestra una tabla con el resultado.</li>
+    <li><code>npm run trafico</code> envía 60 pedidos variados a la tienda de los módulos 5 a 8.</li>
+  </ul>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 240" role="img" aria-label="Tu puesto de trabajo: una terminal con la app, otra que le lanza peticiones, Docker con Jaeger o Grafana recibiendo la telemetría y el navegador para consultarla.">
+        <defs><marker id="fp" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+        <rect class="caja" x="16" y="24" width="200" height="72" rx="7"/>
+        <text class="menor" x="28" y="44">TERMINAL 1</text>
+        <text class="mono" x="28" y="65">$ npm run m3</text>
+        <text class="menor" x="28" y="85">la app, en el puerto 8181</text>
+        <rect class="caja" x="16" y="152" width="200" height="72" rx="7"/>
+        <text class="menor" x="28" y="172">TERMINAL 2</text>
+        <text class="mono" x="28" y="193">$ npm run probar m3</text>
+        <text class="menor" x="28" y="213">lanza las peticiones</text>
+        <line class="linea" x1="116" y1="152" x2="116" y2="99" marker-end="url(#fp)"/>
+        <text class="menor" x="126" y="129">peticiones HTTP</text>
+        <rect class="zona" x="330" y="24" width="210" height="200" rx="9"/>
+        <text class="menor" x="342" y="44">DOCKER</text>
+        <rect class="caja" x="350" y="60" width="170" height="60" rx="7"/>
+        <text class="fuerte" x="435" y="85" text-anchor="middle">Jaeger o Grafana</text>
+        <text class="menor" x="435" y="104" text-anchor="middle">escucha en el puerto 4318</text>
+        <text class="mono" x="435" y="168" text-anchor="middle">npm run infra:jaeger</text>
+        <text class="menor" x="435" y="188" text-anchor="middle">lo arranca y lo para</text>
+        <polyline class="linea" points="216,60 272,60 272,90 347,90" marker-end="url(#fp)"/>
+        <text class="menor" x="224" y="50">telemetría OTLP</text>
+        <rect class="caja" x="600" y="60" width="144" height="60" rx="7"/>
+        <text class="fuerte" x="672" y="85" text-anchor="middle">Tu navegador</text>
+        <text class="mono" x="672" y="104" text-anchor="middle">localhost:16686</text>
+        <line class="linea" x1="600" y1="90" x2="523" y2="90" marker-end="url(#fp)"/>
+        <text class="menor" x="569" y="80" text-anchor="middle">consulta</text>
+      </svg>
+    </div>
+    <figcaption>Tu puesto de trabajo durante el curso. La app corre en tu máquina, fuera de Docker; en Docker solo están las herramientas que reciben la telemetría.</figcaption>
+  </figure>
+</section>
+
+<!-- ======================= SESIÓN 1 ======================= -->
+<div class="sesion">
+  <p class="sesion-etiqueta">Sesión 1 · 105 minutos</p>
+  <h2>Fundamentos y trazas</h2>
+  <p>Al terminar sabrás encontrar en qué paso se pierde el tiempo de una petición, aunque cruce varios servicios.</p>
+</div>
+
+<!-- ---------- M0 ---------- -->
+<section id="m0">
+  <div class="modulo-cabecera">
+    <span class="modulo-num">M0</span>
+    <h2>Qué es OpenTelemetry</h2>
+    <label class="hecho"><input type="checkbox" id="hecho-m0" data-modulo="m0"> Hecho</label>
+    <div class="modulo-meta"><span>15 min</span><span>Sin código</span></div>
+  </div>
+
+  <h3>El problema</h3>
+  <p>Un cliente dice que pagar en tu tienda tarda tres segundos. La petición pasa por la API, el servicio de cupones, el de inventario y el banco. Cada uno escribe sus propios logs, en su propio formato. ¿Cuál de ellos se queda con los tres segundos?</p>
+  <p>Sin una forma común de seguir la petición de principio a fin, la respuesta es abrir cuatro ficheros de log y cruzar marcas de tiempo a mano.</p>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 252" role="img" aria-label="Arriba, una petición pasa por cuatro servicios y cada uno escribe su propio log. Abajo, la misma petición como una sola traza: de los 3 segundos, 2,3 se van en el banco.">
+        <defs><marker id="f0a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+        <text class="menor" x="16" y="18">CON LOGS SUELTOS</text>
+        <rect class="caja" x="16" y="28" width="158" height="40" rx="7"/>
+        <text class="fuerte" x="95" y="53" text-anchor="middle">API</text>
+        <line class="guia" x1="95" y1="68" x2="95" y2="78"/>
+        <text class="mono" x="95" y="93" text-anchor="middle">api.log</text>
+        <line class="linea" x1="174" y1="48" x2="203" y2="48" marker-end="url(#f0a)"/>
+        <rect class="caja" x="206" y="28" width="158" height="40" rx="7"/>
+        <text class="fuerte" x="285" y="53" text-anchor="middle">cupones</text>
+        <line class="guia" x1="285" y1="68" x2="285" y2="78"/>
+        <text class="mono" x="285" y="93" text-anchor="middle">cupones.log</text>
+        <line class="linea" x1="364" y1="48" x2="393" y2="48" marker-end="url(#f0a)"/>
+        <rect class="caja" x="396" y="28" width="158" height="40" rx="7"/>
+        <text class="fuerte" x="475" y="53" text-anchor="middle">inventario</text>
+        <line class="guia" x1="475" y1="68" x2="475" y2="78"/>
+        <text class="mono" x="475" y="93" text-anchor="middle">inventario.log</text>
+        <line class="linea" x1="554" y1="48" x2="583" y2="48" marker-end="url(#f0a)"/>
+        <rect class="caja" x="586" y="28" width="158" height="40" rx="7"/>
+        <text class="fuerte" x="665" y="53" text-anchor="middle">banco</text>
+        <line class="guia" x1="665" y1="68" x2="665" y2="78"/>
+        <text class="mono" x="665" y="93" text-anchor="middle">banco.log</text>
+        <text class="menor" x="16" y="130">CON UNA TRAZA</text>
+        <line class="guia" x1="260" y1="152" x2="260" y2="246"/>
+        <text class="menor" x="260" y="146" text-anchor="middle">0 s</text>
+        <line class="guia" x1="420" y1="152" x2="420" y2="246"/>
+        <text class="menor" x="420" y="146" text-anchor="middle">1 s</text>
+        <line class="guia" x1="580" y1="152" x2="580" y2="246"/>
+        <text class="menor" x="580" y="146" text-anchor="middle">2 s</text>
+        <line class="guia" x1="740" y1="152" x2="740" y2="246"/>
+        <text class="menor" x="740" y="146" text-anchor="end">3 s</text>
+        <text class="mono" x="16" y="168">API</text>
+        <text class="menor" x="252" y="168" text-anchor="end">3,0 s</text>
+        <rect class="apagada resalta" x="260" y="157" width="480" height="14" rx="3"/>
+        <text class="mono" x="30" y="192">cupones</text>
+        <text class="menor" x="252" y="192" text-anchor="end">0,3 s</text>
+        <rect class="apagada resalta" x="276" y="181" width="48" height="14" rx="3"/>
+        <text class="mono" x="30" y="216">inventario</text>
+        <text class="menor" x="252" y="216" text-anchor="end">0,2 s</text>
+        <rect class="apagada resalta" x="324" y="205" width="32" height="14" rx="3"/>
+        <text class="mono fuerte" x="30" y="240">banco</text>
+        <text class="menor fuerte" x="252" y="240" text-anchor="end">2,3 s</text>
+        <rect class="serie-2 resalta" x="356" y="229" width="368" height="14" rx="3"/>
+      </svg>
+    </div>
+    <figcaption>Ejemplo ilustrativo. Con cuatro ficheros de log hay que reconstruir el recorrido a mano. Con una traza, el paso lento salta a la vista.</figcaption>
+  </figure>
+
+  <h3>Qué es y qué no es</h3>
+  <p>OpenTelemetry es un estándar abierto, mantenido por la CNCF, para <strong>generar y enviar</strong> telemetría. Define una API, unos SDK para cada lenguaje y un protocolo de transporte.</p>
+  <p>OpenTelemetry <strong>no almacena ni dibuja</strong> nada. Entrega los datos a la herramienta que tú elijas. Por eso puedes cambiar de herramienta sin volver a instrumentar tu código.</p>
+
+  <h3>Las tres señales</h3>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Señal</th><th>Qué es</th><th>Pregunta que responde</th></tr></thead>
+      <tbody>
+        <tr><td><span class="senal traza">Traza</span></td><td>El recorrido de una petición, paso a paso</td><td>¿Dónde se fue el tiempo de esta petición?</td></tr>
+        <tr><td><span class="senal metrica">Métrica</span></td><td>Un número que se agrega en el tiempo</td><td>¿Cuántos pedidos por minuto? ¿Va a peor?</td></tr>
+        <tr><td><span class="senal log">Log</span></td><td>Un mensaje escrito en un instante</td><td>¿Qué ocurrió exactamente en ese momento?</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 182" role="img" aria-label="La forma de cada señal: una traza es un árbol de barras con duración, una métrica es una línea a lo largo del tiempo y un log es una lista de mensajes con su hora.">
+        <rect class="zona" x="16" y="12" width="220" height="132" rx="9"/>
+        <rect class="zona" x="270" y="12" width="220" height="132" rx="9"/>
+        <rect class="zona" x="524" y="12" width="220" height="132" rx="9"/>
+        <text class="fuerte" x="28" y="34">Traza</text>
+        <rect class="s-traza" x="28" y="50" width="196" height="10" rx="3"/>
+        <rect class="s-traza" x="40" y="70" width="60" height="10" rx="3"/>
+        <rect class="s-traza" x="100" y="90" width="106" height="10" rx="3"/>
+        <rect class="s-traza" x="206" y="110" width="18" height="10" rx="3"/>
+        <text class="fuerte" x="282" y="34">Métrica</text>
+        <line class="guia" x1="282" y1="128" x2="478" y2="128"/>
+        <polyline class="s-metrica" points="282,116 315,106 348,110 381,86 414,92 447,66 478,60"/>
+        <text class="fuerte" x="536" y="34">Log</text>
+        <rect class="s-log" x="536" y="52" width="3" height="16" rx="1"/>
+        <text class="mono chico" x="546" y="64">12:00 INFO  Pedido creado</text>
+        <rect class="s-log" x="536" y="80" width="3" height="16" rx="1"/>
+        <text class="mono chico" x="546" y="92">12:00 WARN  No hay stock</text>
+        <rect class="s-log" x="536" y="108" width="3" height="16" rx="1"/>
+        <text class="mono chico" x="546" y="120">12:01 ERROR Pago rechazado</text>
+        <text class="menor" x="126" y="168" text-anchor="middle">Un árbol de pasos, cada uno con su duración</text>
+        <text class="menor" x="380" y="168" text-anchor="middle">Un número seguido a lo largo del tiempo</text>
+        <text class="menor" x="634" y="168" text-anchor="middle">Mensajes, cada uno en su instante</text>
+      </svg>
+    </div>
+    <figcaption>Las tres señales describen los mismos hechos con formas distintas. Los colores de esta figura acompañan a cada señal en toda la guía.</figcaption>
+  </figure>
+
+  <h3>Las piezas</h3>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 216" role="img" aria-label="Dentro de tu proceso, tu código y las instrumentaciones llaman a la API; el SDK procesa y exporta por OTLP hacia un Collector opcional y de ahí al backend.">
+        <defs><marker id="f0c" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+        <rect class="zona" x="16" y="24" width="444" height="176" rx="9"/>
+        <text class="menor" x="28" y="46">TU PROCESO DE NODE.JS</text>
+        <rect class="caja" x="32" y="60" width="140" height="44" rx="7"/>
+        <text class="fuerte" x="102" y="87" text-anchor="middle">Tu código</text>
+        <rect class="caja" x="32" y="136" width="140" height="44" rx="7"/>
+        <text class="fuerte" x="102" y="155" text-anchor="middle">Instrumentaciones</text>
+        <text class="menor" x="102" y="171" text-anchor="middle">http, express, pino</text>
+        <polyline class="linea" points="172,82 192,82 192,112 209,112" marker-end="url(#f0c)"/>
+        <polyline class="linea" points="172,158 192,158 192,130 209,130" marker-end="url(#f0c)"/>
+        <rect class="caja" x="212" y="98" width="84" height="44" rx="7"/>
+        <text class="fuerte" x="254" y="125" text-anchor="middle">API</text>
+        <text class="menor" x="254" y="160" text-anchor="middle">crea los datos</text>
+        <line class="linea" x1="296" y1="120" x2="333" y2="120" marker-end="url(#f0c)"/>
+        <rect class="caja" x="336" y="98" width="108" height="44" rx="7"/>
+        <text class="fuerte" x="390" y="125" text-anchor="middle">SDK</text>
+        <text class="menor" x="390" y="160" text-anchor="middle">procesa y exporta</text>
+        <line class="linea" x1="444" y1="120" x2="517" y2="120" marker-end="url(#f0c)"/>
+        <text class="fuerte" x="481" y="110" text-anchor="middle">OTLP</text>
+        <rect class="opcional" x="520" y="98" width="100" height="44" rx="7"/>
+        <text class="fuerte" x="570" y="125" text-anchor="middle">Collector</text>
+        <text class="menor" x="570" y="160" text-anchor="middle">opcional</text>
+        <line class="linea" x1="620" y1="120" x2="657" y2="120" marker-end="url(#f0c)"/>
+        <rect class="caja" x="660" y="98" width="84" height="44" rx="7"/>
+        <text class="fuerte" x="702" y="125" text-anchor="middle">Backend</text>
+        <text class="menor" x="702" y="160" text-anchor="middle">guarda y dibuja</text>
+      </svg>
+    </div>
+    <figcaption>El camino de la telemetría. Tu código solo conoce la API. Todo lo que hay a la derecha se puede cambiar sin tocarlo.</figcaption>
+  </figure>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Pieza</th><th>Para qué sirve</th><th>En el curso</th></tr></thead>
+      <tbody>
+        <tr><td><strong>API</strong></td><td>Lo que llama tu código para crear spans y métricas</td><td><code>@opentelemetry/api</code></td></tr>
+        <tr><td><strong>SDK</strong></td><td>Procesa, muestrea y exporta lo que la API produce</td><td><code>@opentelemetry/sdk-node</code></td></tr>
+        <tr><td><strong>Instrumentaciones</strong></td><td>Crean telemetría por ti para librerías conocidas</td><td>http, express, fetch, pino</td></tr>
+        <tr><td><strong>OTLP</strong></td><td>El protocolo con el que viaja la telemetría</td><td>HTTP, puerto 4318</td></tr>
+        <tr><td><strong>Collector</strong></td><td>Proceso intermedio opcional: recibe, transforma y reenvía</td><td>Módulos 7 y 8</td></tr>
+        <tr><td><strong>Backend</strong></td><td>Guarda la telemetría y permite consultarla</td><td>Jaeger y Grafana</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Vocabulario de una traza</h3>
+  <dl>
+    <dt>Span</dt><dd>Una operación con nombre, inicio y fin: «cobrar», «GET /productos».</dd>
+    <dt>Traza</dt><dd>Todos los spans de una misma petición, enlazados como un árbol de padres e hijos.</dd>
+    <dt>Atributo</dt><dd>Un dato del span para buscar y filtrar: <code>cupon.codigo = "VERANO5"</code>.</dd>
+    <dt>Evento</dt><dd>Un momento concreto dentro de un span: «pago autorizado».</dd>
+    <dt>Estado</dt><dd>Si la operación terminó bien o con error.</dd>
+    <dt>Recurso</dt><dd>Quién emite la telemetría: nombre y versión del servicio, máquina, proceso.</dd>
+  </dl>
+</section>
+
+<!-- ---------- M1 ---------- -->
+<section id="m1">
+  <div class="modulo-cabecera">
+    <span class="modulo-num">M1</span>
+    <h2>Tu primer span</h2>
+    <label class="hecho"><input type="checkbox" id="hecho-m1" data-modulo="m1"> Hecho</label>
+    <div class="modulo-meta"><span>10 min</span><span>Terminal</span><span class="senal traza">Trazas</span></div>
+  </div>
+
+  <h3>Objetivo</h3>
+  <p>Crear una traza de tres spans y leerla en la terminal. Sin servidor y sin Docker.</p>
+
+  <h3>Pasos</h3>
+  <div class="orden"><pre><code>npm run m1</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p>Abre <code>modulos/m1-primer-span/main.ts</code>. Todo el módulo cabe en tres ideas:</p>
+  <div class="codigo"><pre><code><span class="c">// 1. El SDK decide qué hacer con los spans: aquí, imprimirlos.</span>
+const sdk = new NodeSDK({
+  serviceName: 'tienda',
+  spanProcessors: [new SimpleSpanProcessor({ exporter: new ConsoleSpanExporter() })],
+});
+sdk.start();
+
+<span class="c">// 2. El tracer es la fábrica de spans de tu código.</span>
+const tracer = trace.getTracer('curso.m1');
+
+<span class="c">// 3. Un span se abre, hace su trabajo y se cierra.</span>
+await tracer.startActiveSpan('preparar-pedido', async (span) =&gt; {
+  span.setAttribute('pedido.id', 1001);
+  await validarStock();   <span class="c">// abre su propio span, hijo de este</span>
+  await calcularTotal();
+  span.end();
+});</code></pre></div>
+
+  <h3>Qué debes ver</h3>
+  <p>Tres bloques, uno por span. Este es el primero, resumido:</p>
+  <div class="salida"><pre>{
+  resource: { attributes: { 'service.name': 'tienda', … } },
+  instrumentationScope: { name: 'curso.m1' },
+  traceId: '0c7620e0eca8295153d8016609d9d96d',
+  parentSpanContext: { spanId: '342ab18348119b0f', … },
+  name: 'validar-stock',
+  id: '48df9a25dfa9273d',
+  duration: 40374.334,
+  attributes: { 'stock.disponible': true },
+}</pre></div>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Campo</th><th>Qué significa</th></tr></thead>
+      <tbody>
+        <tr><td><code>traceId</code></td><td>Identifica la traza. Es el mismo en los tres spans.</td></tr>
+        <tr><td><code>id</code></td><td>Identifica este span.</td></tr>
+        <tr><td><code>parentSpanContext.spanId</code></td><td>El <code>id</code> de su padre. En <code>preparar-pedido</code> no existe: es la raíz.</td></tr>
+        <tr><td><code>duration</code></td><td>Duración en microsegundos: 40374 son unos 40 ms.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 192" role="img" aria-label="Los tres spans del módulo 1. El identificador de preparar-pedido aparece como padre de validar-stock y de calcular-total. Los hijos terminan antes y se exportan primero.">
+        <text class="menor" x="16" y="24">SPAN</text>
+        <text class="menor" x="176" y="24">ID</text>
+        <text class="menor" x="316" y="24">PADRE</text>
+        <line class="guia" x1="450" y1="32" x2="450" y2="146"/>
+        <text class="menor" x="450" y="24" text-anchor="middle">0 ms</text>
+        <line class="guia" x1="537.9" y1="32" x2="537.9" y2="146"/>
+        <text class="menor" x="537.9" y="24" text-anchor="middle">20</text>
+        <line class="guia" x1="625.7" y1="32" x2="625.7" y2="146"/>
+        <text class="menor" x="625.7" y="24" text-anchor="middle">40</text>
+        <text class="mono" x="16" y="60">preparar-pedido</text>
+        <rect class="destacada" x="170" y="44" width="128" height="24" rx="5"/>
+        <text class="mono" x="176" y="60">342ab18348119b0f</text>
+        <text class="menor" x="316" y="60">ninguno: es la raíz</text>
+        <g class="marca" tabindex="0" data-valor="56,9 ms" data-etiqueta="preparar-pedido · se exporta en 3.º lugar"><rect class="toque" x="444" y="40" width="300" height="32"/><rect class="serie-1 resalta" x="450" y="49" width="250" height="14" rx="3"/></g>
+        <circle class="caja" cx="716" cy="56" r="9"/>
+        <text class="menor fuerte" x="716" y="60" text-anchor="middle">3</text>
+        <text class="mono" x="30" y="96">validar-stock</text>
+        <rect class="destacada" x="310" y="80" width="128" height="24" rx="5"/>
+        <text class="mono" x="316" y="96">342ab18348119b0f</text>
+        <text class="mono" x="176" y="96">48df9a25dfa9273d</text>
+        <g class="marca" tabindex="0" data-valor="40,4 ms" data-etiqueta="validar-stock · se exporta en 1.º lugar"><rect class="toque" x="444" y="76" width="300" height="32"/><rect class="serie-1 resalta" x="452.2" y="85" width="177.5" height="14" rx="3"/></g>
+        <circle class="caja" cx="645.7" cy="92" r="9"/>
+        <text class="menor fuerte" x="645.7" y="96" text-anchor="middle">1</text>
+        <text class="mono" x="30" y="132">calcular-total</text>
+        <rect class="destacada" x="310" y="116" width="128" height="24" rx="5"/>
+        <text class="mono" x="316" y="132">342ab18348119b0f</text>
+        <text class="mono" x="176" y="132">c49c5ca780b11f37</text>
+        <g class="marca" tabindex="0" data-valor="15,5 ms" data-etiqueta="calcular-total · se exporta en 2.º lugar"><rect class="toque" x="444" y="112" width="300" height="32"/><rect class="serie-1 resalta" x="631" y="121" width="68.1" height="14" rx="3"/></g>
+        <circle class="caja" cx="715.1" cy="128" r="9"/>
+        <text class="menor fuerte" x="715.1" y="132" text-anchor="middle">2</text>
+        <text class="menor" x="16" y="178">traceId <tspan class="mono">0c7620e0eca8295153d8016609d9d96d</tspan> · el mismo en los tres spans</text>
+      </svg>
+    </div>
+    <figcaption>Los tres spans de tu primera traza. El valor resaltado es el mismo: el <code>id</code> del padre es el <code>padre</code> de sus hijos. El número del círculo indica el orden en que se exporta cada span.</figcaption>
+  </figure>
+
+  <p class="nota">Los hijos aparecen antes que el padre. Un span se exporta cuando termina, y el padre termina el último.</p>
+
+  <div class="reto">
+    <h3>Reto</h3>
+    <p>Añade al span padre el atributo <code>pedido.items</code> y crea un tercer span hijo llamado <code>enviar-confirmacion</code>.</p>
+  </div>
+  <details class="solucion">
+    <summary>Ver la solución</summary>
+    <div>
+      <div class="orden"><pre><code>npm run m1:solucion</code></pre><button class="copiar" type="button">Copiar</button></div>
+      <p>El código está en <code>modulos/m1-primer-span/solucion.ts</code>. Ahora salen cuatro spans con el mismo <code>traceId</code>.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ---------- M2 ---------- -->
+<section id="m2">
+  <div class="modulo-cabecera">
+    <span class="modulo-num">M2</span>
+    <h2>Auto-instrumentación</h2>
+    <label class="hecho"><input type="checkbox" id="hecho-m2" data-modulo="m2"> Hecho</label>
+    <div class="modulo-meta"><span>25 min</span><span>Terminal, después Jaeger</span><span class="senal traza">Trazas</span></div>
+  </div>
+
+  <h3>Objetivo</h3>
+  <p>Obtener trazas de una API Express sin escribir código de OpenTelemetry en ella, y verlas en Jaeger.</p>
+
+  <h3>Paso 1. Sin tocar nada: solo variables de entorno</h3>
+  <div class="orden"><pre><code>npm run m2:zero</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p>En la otra terminal:</p>
+  <div class="orden"><pre><code>npm run probar m2</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p>La terminal de la app se llena de spans. Ahora abre <code>modulos/m2-auto/app.ts</code>: no hay ni una línea de OpenTelemetry. Toda la configuración está en <code>env/zero-code.env</code>:</p>
+  <div class="codigo"><pre><code>OTEL_SERVICE_NAME=tienda
+OTEL_TRACES_EXPORTER=console
+OTEL_METRICS_EXPORTER=none
+OTEL_LOGS_EXPORTER=none
+OTEL_NODE_ENABLED_INSTRUMENTATIONS=http,express</code></pre></div>
+
+  <h3>Paso 2. La misma configuración, en código</h3>
+  <p>Para la app con <kbd>Ctrl</kbd> + <kbd>C</kbd> y arranca esta variante:</p>
+  <div class="orden"><pre><code>npm run m2:consola</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p>El resultado es el mismo, pero ahora la configuración vive en <code>modulos/m2-auto/instrumentation.ts</code>. La clave está en cómo se arranca:</p>
+  <div class="codigo"><pre><code>tsx --import ./modulos/m2-auto/instrumentation.ts modulos/m2-auto/app.ts</code></pre></div>
+  <p><code>--import</code> carga la instrumentación <strong>antes</strong> que la app. Cuando la app hace <code>import express</code>, la librería ya está preparada para crear spans.</p>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 156" role="img" aria-label="Orden de arranque: Node arranca, carga instrumentation.ts, después carga app.ts, que recibe express ya instrumentado, y al llegar una petición se crean los spans.">
+        <defs><marker id="f2a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+        <rect class="caja" x="16" y="16" width="158" height="124" rx="7"/>
+        <text class="menor fuerte" x="28" y="38">1</text>
+        <text class="fuerte" x="28" y="62">Node arranca</text>
+        <text class="menor" x="28" y="86">Lee la orden --import</text>
+        <text class="menor" x="28" y="103">antes de tocar tu app</text>
+        <line class="linea" x1="174" y1="78" x2="203" y2="78" marker-end="url(#f2a)"/>
+        <rect class="destacada" x="206" y="16" width="158" height="124" rx="7"/>
+        <text class="menor fuerte" x="218" y="38">2</text>
+        <text class="mono fuerte" x="218" y="62">instrumentation.ts</text>
+        <text class="menor" x="218" y="86">Arranca el SDK y deja</text>
+        <text class="menor" x="218" y="103">preparados http y</text>
+        <text class="menor" x="218" y="120">express</text>
+        <line class="linea" x1="364" y1="78" x2="393" y2="78" marker-end="url(#f2a)"/>
+        <rect class="caja" x="396" y="16" width="158" height="124" rx="7"/>
+        <text class="menor fuerte" x="408" y="38">3</text>
+        <text class="mono fuerte" x="408" y="62">app.ts</text>
+        <text class="menor" x="408" y="86">Hace import express</text>
+        <text class="menor" x="408" y="103">y recibe la versión</text>
+        <text class="menor" x="408" y="120">instrumentada</text>
+        <line class="linea" x1="554" y1="78" x2="583" y2="78" marker-end="url(#f2a)"/>
+        <rect class="caja" x="586" y="16" width="158" height="124" rx="7"/>
+        <text class="menor fuerte" x="598" y="38">4</text>
+        <text class="fuerte" x="598" y="62">Llega una petición</text>
+        <text class="menor" x="598" y="86">Express la atiende y</text>
+        <text class="menor" x="598" y="103">los spans se crean</text>
+        <text class="menor" x="598" y="120">sin código tuyo</text>
+      </svg>
+    </div>
+    <figcaption>El orden es lo que hace que funcione. Si <code>app.ts</code> se cargara antes que la instrumentación, recibiría un Express sin preparar y no habría spans, sin ningún mensaje de error.</figcaption>
+  </figure>
+
+  <h3>Paso 3. De la terminal a Jaeger</h3>
+  <div class="orden"><pre><code>npm run infra:jaeger</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p>Para la app y arráncala en su modo normal, que envía por OTLP:</p>
+  <div class="orden"><pre><code>npm run m2</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <div class="orden"><pre><code>npm run probar m2</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p>Abre <a href="http://localhost:16686">http://localhost:16686</a>, elige el servicio <code>tienda</code> y pulsa <strong>Find Traces</strong>.</p>
+
+  <h3>Qué debes ver</h3>
+  <p>Cuatro trazas, una por petición. Cada una tiene tres spans, uno dentro de otro:</p>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 150" role="img" aria-label="El span de la petición HTTP, creado por la instrumentación de http, contiene dos spans creados por la instrumentación de express: el middleware jsonParser y el request handler.">
+        <rect class="caja" x="16" y="16" width="540" height="118" rx="7"/>
+        <text class="mono fuerte" x="28" y="39">GET /productos/:id</text>
+        <rect class="zona" x="32" y="54" width="200" height="64" rx="7"/>
+        <text class="mono" x="44" y="91">middleware - jsonParser</text>
+        <rect class="zona" x="248" y="54" width="292" height="64" rx="7"/>
+        <text class="mono" x="260" y="91">request handler - /productos/:id</text>
+        <line class="guia" x1="556" y1="34" x2="580" y2="34"/>
+        <text x="586" y="38">instrumentación de http</text>
+        <line class="guia" x1="540" y1="86" x2="580" y2="86"/>
+        <text x="586" y="90">instrumentación de express</text>
+      </svg>
+    </div>
+    <figcaption>Los tres spans de una petición. El de fuera mide la petición completa; los de dentro, lo que Express hace con ella.</figcaption>
+  </figure>
+  <p class="nota">El span se llama <code>GET /productos/:id</code> y no <code>GET /productos/1</code>. Usa la ruta, no la URL: así todas las peticiones a esa ruta se agrupan bajo un mismo nombre.</p>
+
+  <div class="reto">
+    <h3>Reto</h3>
+    <p>Una de las cuatro peticiones devolvió un 404. Encuéntrala en Jaeger sin abrir las trazas una a una.</p>
+  </div>
+  <details class="solucion">
+    <summary>Ver la solución</summary>
+    <div>
+      <p>En el buscador de Jaeger, escribe esto en el campo de etiquetas (<strong>Tags</strong>) y vuelve a buscar:</p>
+      <div class="codigo"><pre><code>http.response.status_code=404</code></pre></div>
+      <p>Cada atributo de un span es un criterio de búsqueda. Por eso merece la pena elegirlos bien.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ---------- M3 ---------- -->
+<section id="m3">
+  <div class="modulo-cabecera">
+    <span class="modulo-num">M3</span>
+    <h2>Spans manuales</h2>
+    <label class="hecho"><input type="checkbox" id="hecho-m3" data-modulo="m3"> Hecho</label>
+    <div class="modulo-meta"><span>30 min</span><span>Jaeger</span><span class="senal traza">Trazas</span></div>
+  </div>
+
+  <h3>Objetivo</h3>
+  <p>La auto-instrumentación ve la petición HTTP, pero no sabe nada de tu negocio. Vas a añadir spans propios a un checkout y a usarlos para encontrar una lentitud escondida.</p>
+
+  <h3>Pasos</h3>
+  <p>Con Jaeger arrancado (<code>npm run infra:jaeger</code>):</p>
+  <div class="orden"><pre><code>npm run m3</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <div class="orden"><pre><code>npm run probar m3</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <div class="salida"><span class="rotulo">Qué debes ver</span><pre>Caso                      Petición              HTTP   Tiempo
+----------------------------------------------------------------
+Sin cupón                 POST /checkout        201    111 ms
+Cupón VERANO5             POST /checkout        201    114 ms
+<span class="r">Cupón BIENVENIDA10        POST /checkout        201    913 ms</span>
+Importe alto              POST /checkout        402    91 ms
+Producto que no existe    POST /checkout        404    2 ms</pre></div>
+  <p class="nota">Tus tiempos variarán unos milisegundos. La diferencia entre cupones, no.</p>
+  <p>Con el cupón <code>BIENVENIDA10</code> el checkout tarda casi un segundo. En Jaeger, busca las trazas de <code>tienda</code> y abre la más larga.</p>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 222" role="img" aria-label="Traza del checkout con el cupón BIENVENIDA10: de 907 milisegundos, 823 se van en el span aplicar-cupon.">
+        <line class="guia" x1="260" y1="34" x2="260" y2="214"/>
+        <text class="menor" x="260" y="24" text-anchor="middle">0 ms</text>
+        <line class="guia" x1="392.3" y1="34" x2="392.3" y2="214"/>
+        <text class="menor" x="392.3" y="24" text-anchor="middle">250</text>
+        <line class="guia" x1="524.6" y1="34" x2="524.6" y2="214"/>
+        <text class="menor" x="524.6" y="24" text-anchor="middle">500</text>
+        <line class="guia" x1="656.9" y1="34" x2="656.9" y2="214"/>
+        <text class="menor" x="656.9" y="24" text-anchor="middle">750</text>
+        <text class="mono" x="16" y="56">POST /checkout</text>
+        <text class="menor" x="252" y="56" text-anchor="end">907 ms</text>
+        <g class="marca" tabindex="0" data-valor="907 ms" data-etiqueta="POST /checkout · la petición completa"><rect class="toque" x="10" y="37" width="740" height="30"/><rect class="apagada resalta" x="260" y="44" width="479.8" height="16" rx="3"/></g>
+        <text class="mono" x="30" y="86">request handler</text>
+        <text class="menor" x="252" y="86" text-anchor="end">906 ms</text>
+        <g class="marca" tabindex="0" data-valor="906 ms" data-etiqueta="request handler · lo que Express dedica a atenderla"><rect class="toque" x="10" y="67" width="740" height="30"/><rect class="apagada resalta" x="260.5" y="74" width="479.5" height="16" rx="3"/></g>
+        <text class="mono" x="44" y="116">validar-carrito</text>
+        <text class="menor" x="252" y="116" text-anchor="end">21 ms</text>
+        <g class="marca" tabindex="0" data-valor="21 ms" data-etiqueta="validar-carrito · carrito.items = 1"><rect class="toque" x="10" y="97" width="740" height="30"/><rect class="apagada resalta" x="260.5" y="104" width="10.9" height="16" rx="3"/></g>
+        <text class="mono fuerte" x="44" y="146">aplicar-cupon</text>
+        <text class="menor fuerte" x="252" y="146" text-anchor="end">823 ms</text>
+        <g class="marca" tabindex="0" data-valor="823 ms" data-etiqueta="aplicar-cupon · cupon.codigo = BIENVENIDA10 · cupon.comprobaciones = 40"><rect class="toque" x="10" y="127" width="740" height="30"/><rect class="serie-2 resalta" x="271.1" y="134" width="435.8" height="16" rx="3"/></g>
+        <text class="mono" x="44" y="176">calcular-impuestos</text>
+        <text class="menor" x="252" y="176" text-anchor="end">0 ms</text>
+        <g class="marca" tabindex="0" data-valor="0 ms" data-etiqueta="calcular-impuestos · impuestos.iva = 16,99"><rect class="toque" x="10" y="157" width="740" height="30"/><rect class="apagada resalta" x="707.2" y="164" width="2" height="16" rx="1"/></g>
+        <text class="mono" x="44" y="206">cobrar</text>
+        <text class="menor" x="252" y="206" text-anchor="end">60 ms</text>
+        <g class="marca" tabindex="0" data-valor="60 ms" data-etiqueta="cobrar · pago.importe = 97,9"><rect class="toque" x="10" y="187" width="740" height="30"/><rect class="apagada resalta" x="707.2" y="194" width="31.9" height="16" rx="3"/></g>
+      </svg>
+    </div>
+    <figcaption>Traza real del curso. La petición tarda 907 ms y 823 de ellos se van en <code>aplicar-cupon</code>. Sin spans manuales solo verías las dos primeras barras.</figcaption>
+  </figure>
+
+  <p>Pulsa el span <code>aplicar-cupon</code> y mira sus atributos: <code>cupon.codigo = BIENVENIDA10</code> y <code>cupon.comprobaciones = 40</code>. Ese segundo dato es la pista.</p>
+
+  <h3>El patrón de un span manual</h3>
+  <p>Está en <code>modulos/m3-spans-manuales/checkout.ts</code>. Todos los spans del módulo siguen esta forma:</p>
+  <div class="codigo"><pre><code>return tracer.startActiveSpan('validar-carrito', async (span) =&gt; {
+  try {
+    span.setAttribute('carrito.items', carrito.items.length);
+    <span class="c">// … lógica de negocio …</span>
+  } catch (error) {
+    span.recordException(error as Error);                  <span class="c">// guarda el error</span>
+    span.setStatus({ code: SpanStatusCode.ERROR });        <span class="c">// marca el span como fallido</span>
+    throw error;
+  } finally {
+    span.end();                                            <span class="c">// sin end(), el span no se exporta</span>
+  }
+});</code></pre></div>
+  <p class="nota"><strong><code>recordException</code> no basta.</strong> Guarda el error como evento, pero el span sigue contando como correcto. Es <code>setStatus</code> el que lo marca en rojo. Compruébalo en la traza del caso «Importe alto»: el span <code>cobrar</code> tiene las dos cosas.</p>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 240" role="img" aria-label="Anatomía del span cobrar cuando el pago falla: nombre y duración, un atributo con el importe, dos eventos en su línea de tiempo y el estado de error. A la derecha, la llamada que crea cada parte.">
+        <rect class="caja" x="16" y="16" width="452" height="208" rx="9"/>
+        <text class="mono fuerte" x="34" y="47">cobrar</text>
+        <text class="menor" x="450" y="47" text-anchor="end">61 ms</text>
+        <line class="guia" x1="34" y1="60" x2="450" y2="60"/>
+        <text class="menor" x="34" y="88">ATRIBUTOS</text>
+        <text class="mono" x="130" y="88">pago.importe = 1506.45</text>
+        <text class="menor" x="34" y="134">EVENTOS</text>
+        <text class="menor" x="130" y="112">0 ms</text>
+        <text class="menor" x="440" y="112" text-anchor="end">61 ms</text>
+        <line class="eje" x1="130" y1="128" x2="440" y2="128"/>
+        <circle class="punto-1" cx="130" cy="128" r="5"/>
+        <circle class="punto-1" cx="440" cy="128" r="5"/>
+        <text class="mono chico" x="130" y="152">pago.enviado-al-banco</text>
+        <text class="mono chico" x="440" y="152" text-anchor="end">exception</text>
+        <text class="menor" x="34" y="192">ESTADO</text>
+        <circle class="critico" cx="137" cy="188" r="7"/>
+        <path class="aspa" d="M134,185 l6,6 M140,185 l-6,6"/>
+        <text class="fuerte" x="152" y="192">ERROR</text>
+        <text class="menor" x="130" y="211">Tarjeta rechazada: supera el límite de 1000 €</text>
+        <line class="guia" x1="468" y1="43" x2="494" y2="43"/>
+        <text class="mono chico" x="500" y="47">startActiveSpan('cobrar', …)</text>
+        <line class="guia" x1="468" y1="84" x2="494" y2="84"/>
+        <text class="mono chico" x="500" y="88">span.setAttribute(…)</text>
+        <line class="guia" x1="468" y1="124" x2="494" y2="124"/>
+        <text class="mono chico" x="500" y="128">span.addEvent(…)</text>
+        <text class="mono chico" x="500" y="146">span.recordException(error)</text>
+        <line class="guia" x1="468" y1="188" x2="494" y2="188"/>
+        <text class="mono chico" x="500" y="192">span.setStatus({ code: ERROR })</text>
+      </svg>
+    </div>
+    <figcaption>El span <code>cobrar</code> del caso «Importe alto», tal como llegó a Jaeger. A la derecha, la llamada de tu código que escribe cada parte.</figcaption>
+  </figure>
+
+  <div class="reto">
+    <h3>Reto</h3>
+    <p>Explica por qué <code>aplicar-cupon</code> tarda 823 ms con <code>BIENVENIDA10</code> y solo 21 ms con <code>VERANO5</code>. Después arréglalo en <code>checkout.ts</code>.</p>
+    <p>Pista: <code>cupon.comprobaciones</code> vale 40 en un caso y 1 en el otro.</p>
+  </div>
+  <details class="solucion">
+    <summary>Ver la solución</summary>
+    <div>
+      <p>El código recorre la lista de cupones y consulta la base de datos una vez por cada uno hasta encontrar el que busca. <code>VERANO5</code> es el primero de la lista y <code>BIENVENIDA10</code> el último, de 40.</p>
+      <p>La solución usa un <code>Map</code> indexado por código: una sola consulta, esté donde esté el cupón.</p>
+
+      <figure>
+        <div class="lienzo">
+          <svg class="dg" viewBox="0 0 760 246" role="img" aria-label="Duración de cada span antes y después de la solución. La petición pasa de 907 a 101 milisegundos porque aplicar-cupon pasa de 823 a 21. Los demás spans no cambian.">
+            <rect class="antes" x="200" y="12" width="12" height="12" rx="2"/>
+            <text x="218" y="22">Antes</text>
+            <rect class="despues" x="280" y="12" width="12" height="12" rx="2"/>
+            <text x="298" y="22">Con la solución</text>
+            <line class="eje" x1="200" y1="52" x2="200" y2="240"/>
+            <text class="menor" x="200" y="46" text-anchor="middle">0 ms</text>
+            <line class="guia" x1="320" y1="52" x2="320" y2="240"/>
+            <text class="menor" x="320" y="46" text-anchor="middle">250</text>
+            <line class="guia" x1="440" y1="52" x2="440" y2="240"/>
+            <text class="menor" x="440" y="46" text-anchor="middle">500</text>
+            <line class="guia" x1="560" y1="52" x2="560" y2="240"/>
+            <text class="menor" x="560" y="46" text-anchor="middle">750</text>
+            <line class="guia" x1="680" y1="52" x2="680" y2="240"/>
+            <text class="menor" x="680" y="46" text-anchor="middle">1000</text>
+            <text class="mono" x="16" y="80">POST /checkout</text>
+            <g class="marca" tabindex="0" data-valor="907 ms" data-etiqueta="POST /checkout · antes"><rect class="toque" x="200" y="59" width="540" height="16"/><path class="antes resalta" d="M200,60 h431.4 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-431.4 z"/></g>
+            <text class="menor" x="642.4" y="71">907 ms</text>
+            <g class="marca" tabindex="0" data-valor="101 ms" data-etiqueta="POST /checkout · con la solución"><rect class="toque" x="200" y="75" width="540" height="16"/><path class="despues resalta" d="M200,76 h44.5 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-44.5 z"/></g>
+            <text class="menor fuerte" x="255.5" y="87">101 ms</text>
+            <text class="mono" x="16" y="126">aplicar-cupon</text>
+            <g class="marca" tabindex="0" data-valor="823 ms" data-etiqueta="aplicar-cupon · antes"><rect class="toque" x="200" y="105" width="540" height="16"/><path class="antes resalta" d="M200,106 h391 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-391 z"/></g>
+            <text class="menor" x="602" y="117">823 ms</text>
+            <g class="marca" tabindex="0" data-valor="21 ms" data-etiqueta="aplicar-cupon · con la solución"><rect class="toque" x="200" y="121" width="540" height="16"/><path class="despues resalta" d="M200,122 h6.1 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-6.1 z"/></g>
+            <text class="menor fuerte" x="217.1" y="133">21 ms</text>
+            <text class="mono" x="16" y="172">cobrar</text>
+            <g class="marca" tabindex="0" data-valor="60 ms" data-etiqueta="cobrar · antes"><rect class="toque" x="200" y="151" width="540" height="16"/><path class="antes resalta" d="M200,152 h24.8 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-24.8 z"/></g>
+            <text class="menor" x="235.8" y="163">60 ms</text>
+            <g class="marca" tabindex="0" data-valor="60 ms" data-etiqueta="cobrar · con la solución"><rect class="toque" x="200" y="167" width="540" height="16"/><path class="despues resalta" d="M200,168 h24.8 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-24.8 z"/></g>
+            <text class="menor fuerte" x="235.8" y="179">60 ms</text>
+            <text class="mono" x="16" y="218">validar-carrito</text>
+            <g class="marca" tabindex="0" data-valor="21 ms" data-etiqueta="validar-carrito · antes"><rect class="toque" x="200" y="197" width="540" height="16"/><path class="antes resalta" d="M200,198 h6.1 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-6.1 z"/></g>
+            <text class="menor" x="217.1" y="209">21 ms</text>
+            <g class="marca" tabindex="0" data-valor="20 ms" data-etiqueta="validar-carrito · con la solución"><rect class="toque" x="200" y="213" width="540" height="16"/><path class="despues resalta" d="M200,214 h5.6 a4,4 0 0 1 4,4 v6 a4,4 0 0 1 -4,4 h-5.6 z"/></g>
+            <text class="menor fuerte" x="216.6" y="225">20 ms</text>
+          </svg>
+        </div>
+        <figcaption>Las mismas peticiones, antes y después. Solo cambia <code>aplicar-cupon</code>; el resto del checkout tarda lo mismo.</figcaption>
+      </figure>
+      <div class="orden"><pre><code>npm run m3:solucion</code></pre><button class="copiar" type="button">Copiar</button></div>
+      <p>Repite <code>npm run probar m3</code>: el caso de <code>BIENVENIDA10</code> baja de 913 ms a 102 ms. El código está en <code>checkout.solucion.ts</code>.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ---------- M4 ---------- -->
+<section id="m4">
+  <div class="modulo-cabecera">
+    <span class="modulo-num">M4</span>
+    <h2>Traza distribuida</h2>
+    <label class="hecho"><input type="checkbox" id="hecho-m4" data-modulo="m4"> Hecho</label>
+    <div class="modulo-meta"><span>25 min</span><span>Jaeger</span><span class="senal traza">Trazas</span></div>
+  </div>
+
+  <h3>Objetivo</h3>
+  <p>Ver una sola traza que cruza dos servicios distintos, y entender cómo viaja el contexto de uno a otro.</p>
+
+  <h3>Pasos</h3>
+  <p>Necesitas tres terminales. En la primera, el inventario:</p>
+  <div class="orden"><pre><code>npm run m4:inventario</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p>En la segunda, los pedidos:</p>
+  <div class="orden"><pre><code>npm run m4:pedidos</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p>En la tercera, las peticiones:</p>
+  <div class="orden"><pre><code>npm run probar m4</code></pre><button class="copiar" type="button">Copiar</button></div>
+
+  <h3>Qué debes ver</h3>
+  <p>En la terminal del <strong>inventario</strong>, la cabecera con la que llega cada petición:</p>
+  <div class="salida"><pre>GET /stock/1  traceparent: 00-0dfefaa1c8e3a084c7734a04ddf4d5a4-a7aa6112c301bafe-01
+GET /stock/2  traceparent: 00-0dfefaa1c8e3a084c7734a04ddf4d5a4-0487b2c0d068ec2f-01
+GET /stock/3  traceparent: 00-0dfefaa1c8e3a084c7734a04ddf4d5a4-8d855eb260f8887a-01</pre></div>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 222" role="img" aria-label="El servicio de pedidos llama al de inventario y añade la cabecera traceparent, formada por versión, identificador de traza, identificador del span que llama y marca de muestreo.">
+        <defs>
+          <marker id="f3" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker>
+        </defs>
+        <rect class="caja" x="16" y="16" width="190" height="56" rx="7"/>
+        <text class="fuerte" x="111" y="40" text-anchor="middle">pedidos</text>
+        <text class="menor" x="111" y="58" text-anchor="middle">puerto 8181</text>
+        <rect class="caja" x="554" y="16" width="190" height="56" rx="7"/>
+        <text class="fuerte" x="649" y="40" text-anchor="middle">inventario</text>
+        <text class="menor" x="649" y="58" text-anchor="middle">puerto 8182</text>
+        <line class="linea" x1="206" y1="44" x2="552" y2="44" marker-end="url(#f3)"/>
+        <text class="mono" x="380" y="34" text-anchor="middle">GET /stock/1</text>
+        <text class="menor" x="380" y="62" text-anchor="middle">lleva la cabecera traceparent</text>
+
+        <rect class="zona" x="56" y="112" width="44" height="30" rx="5"/>
+        <text class="mono" x="78" y="132" text-anchor="middle">00</text>
+        <text class="mono" x="110" y="132" text-anchor="middle">-</text>
+        <rect class="destacada" x="120" y="112" width="252" height="30" rx="5"/>
+        <text class="mono" x="246" y="132" text-anchor="middle">0dfefaa1c8e3a084c7734a04ddf4d5a4</text>
+        <text class="mono" x="382" y="132" text-anchor="middle">-</text>
+        <rect class="zona" x="392" y="112" width="142" height="30" rx="5"/>
+        <text class="mono" x="463" y="132" text-anchor="middle">a7aa6112c301bafe</text>
+        <text class="mono" x="574" y="132" text-anchor="middle">-</text>
+        <rect class="zona" x="614" y="112" width="44" height="30" rx="5"/>
+        <text class="mono" x="636" y="132" text-anchor="middle">01</text>
+
+        <line class="guia" x1="78" y1="142" x2="78" y2="158"/>
+        <line class="guia" x1="246" y1="142" x2="246" y2="158"/>
+        <line class="guia" x1="463" y1="142" x2="463" y2="158"/>
+        <line class="guia" x1="636" y1="142" x2="636" y2="158"/>
+        <text x="78" y="174" text-anchor="middle">versión</text>
+        <text class="fuerte" x="246" y="174" text-anchor="middle">id de la traza</text>
+        <text class="menor" x="246" y="192" text-anchor="middle">el mismo en los dos servicios</text>
+        <text x="463" y="174" text-anchor="middle">id del span que llama</text>
+        <text class="menor" x="463" y="192" text-anchor="middle">será el padre en inventario</text>
+        <text x="636" y="174" text-anchor="middle">muestreada</text>
+      </svg>
+    </div>
+    <figcaption>La cabecera <code>traceparent</code> es un estándar del W3C. Con ella, el inventario sabe a qué traza pertenece la petición y de qué span cuelga.</figcaption>
+  </figure>
+
+  <p>En Jaeger, elige el servicio <code>pedidos</code>. La traza del pedido de tres productos tiene <strong>16 spans de dos servicios</strong>, cada servicio con su color. Dentro de <code>comprobar-stock</code> hay tres llamadas al inventario, una detrás de otra.</p>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 250" role="img" aria-label="Traza del pedido de tres productos: dentro de comprobar-stock hay tres llamadas seguidas al servicio de inventario, de unos 41 milisegundos cada una, que suman 124.">
+        <rect class="serie-1" x="270" y="10" width="12" height="12" rx="2"/>
+        <text x="288" y="20">pedidos</text>
+        <rect class="serie-2" x="360" y="10" width="12" height="12" rx="2"/>
+        <text x="378" y="20">inventario</text>
+        <line class="guia" x1="270" y1="50" x2="270" y2="242"/>
+        <text class="menor" x="270" y="44" text-anchor="middle">0 ms</text>
+        <line class="guia" x1="446.9" y1="50" x2="446.9" y2="242"/>
+        <text class="menor" x="446.9" y="44" text-anchor="middle">50</text>
+        <line class="guia" x1="623.8" y1="50" x2="623.8" y2="242"/>
+        <text class="menor" x="623.8" y="44" text-anchor="middle">100</text>
+        <text class="menor" x="16" y="66">UNA LLAMADA POR PRODUCTO</text>
+        <text class="mono chico" x="16" y="90">POST /pedidos</text>
+        <text class="menor" x="262" y="90" text-anchor="end">124 ms</text>
+        <g class="marca" tabindex="0" data-valor="124 ms" data-etiqueta="POST /pedidos · servicio pedidos"><rect class="toque" x="10" y="75" width="740" height="22"/><rect class="serie-1 resalta" x="270" y="80" width="439.8" height="12" rx="3"/></g>
+        <text class="mono chico" x="28" y="112">comprobar-stock</text>
+        <text class="menor" x="262" y="112" text-anchor="end">124 ms</text>
+        <g class="marca" tabindex="0" data-valor="124 ms" data-etiqueta="comprobar-stock · servicio pedidos"><rect class="toque" x="10" y="97" width="740" height="22"/><rect class="serie-1 resalta" x="273.5" y="102" width="437.7" height="12" rx="3"/></g>
+        <text class="mono chico" x="40" y="134">GET</text>
+        <text class="menor" x="262" y="134" text-anchor="end">41 ms</text>
+        <g class="marca" tabindex="0" data-valor="41 ms" data-etiqueta="GET · servicio pedidos"><rect class="toque" x="10" y="119" width="740" height="22"/><rect class="serie-1 resalta" x="273.5" y="124" width="144" height="12" rx="3"/></g>
+        <text class="mono chico" x="52" y="156">GET /stock/:productoId</text>
+        <text class="menor" x="262" y="156" text-anchor="end">40 ms</text>
+        <g class="marca" tabindex="0" data-valor="40 ms" data-etiqueta="GET /stock/:productoId · servicio inventario"><rect class="toque" x="10" y="141" width="740" height="22"/><rect class="serie-2 resalta" x="273.5" y="146" width="142.2" height="12" rx="3"/></g>
+        <text class="mono chico" x="40" y="178">GET</text>
+        <text class="menor" x="262" y="178" text-anchor="end">41 ms</text>
+        <g class="marca" tabindex="0" data-valor="41 ms" data-etiqueta="GET · servicio pedidos"><rect class="toque" x="10" y="163" width="740" height="22"/><rect class="serie-1 resalta" x="418.6" y="168" width="145.4" height="12" rx="3"/></g>
+        <text class="mono chico" x="52" y="200">GET /stock/:productoId</text>
+        <text class="menor" x="262" y="200" text-anchor="end">41 ms</text>
+        <g class="marca" tabindex="0" data-valor="41 ms" data-etiqueta="GET /stock/:productoId · servicio inventario"><rect class="toque" x="10" y="185" width="740" height="22"/><rect class="serie-2 resalta" x="418.6" y="190" width="144" height="12" rx="3"/></g>
+        <text class="mono chico" x="40" y="222">GET</text>
+        <text class="menor" x="262" y="222" text-anchor="end">41 ms</text>
+        <g class="marca" tabindex="0" data-valor="41 ms" data-etiqueta="GET · servicio pedidos"><rect class="toque" x="10" y="207" width="740" height="22"/><rect class="serie-1 resalta" x="563.7" y="212" width="145.1" height="12" rx="3"/></g>
+        <text class="mono chico" x="52" y="244">GET /stock/:productoId</text>
+        <text class="menor" x="262" y="244" text-anchor="end">41 ms</text>
+        <g class="marca" tabindex="0" data-valor="41 ms" data-etiqueta="GET /stock/:productoId · servicio inventario"><rect class="toque" x="10" y="229" width="740" height="22"/><rect class="serie-2 resalta" x="567.2" y="234" width="143.7" height="12" rx="3"/></g>
+      </svg>
+    </div>
+    <figcaption>Traza real del curso, sin los spans de middleware. Cada llamada de <code>pedidos</code> tiene debajo el trabajo que provoca en <code>inventario</code>. Las tres van en fila: la segunda no empieza hasta que acaba la primera.</figcaption>
+  </figure>
+  <p class="nota"><strong>No hay código de propagación.</strong> En <code>pedidos.ts</code> solo hay un <code>fetch</code> normal. La instrumentación añade la cabecera al salir y la lee al entrar.</p>
+
+  <div class="reto">
+    <h3>Reto</h3>
+    <p>El pedido hace una llamada al inventario por cada producto. Con tres productos son tres llamadas; con treinta, treinta. El inventario ya ofrece <code>GET /stock?ids=1,2,3</code>. Cambia <code>comprobarStock</code> para usarlo y compara las dos trazas.</p>
+  </div>
+  <details class="solucion">
+    <summary>Ver la solución</summary>
+    <div>
+      <p>Para el servicio de pedidos y arranca la versión corregida:</p>
+      <div class="orden"><pre><code>npm run m4:pedidos:solucion</code></pre><button class="copiar" type="button">Copiar</button></div>
+      <figure>
+        <div class="lienzo">
+          <svg class="dg" viewBox="0 0 760 392" role="img" aria-label="Comparación a la misma escala: con una llamada por producto la petición tarda 124 milisegundos; con una sola llamada por lotes, 51.">
+            <rect class="serie-1" x="270" y="10" width="12" height="12" rx="2"/>
+            <text x="288" y="20">pedidos</text>
+            <rect class="serie-2" x="360" y="10" width="12" height="12" rx="2"/>
+            <text x="378" y="20">inventario</text>
+            <line class="guia" x1="270" y1="50" x2="270" y2="384"/>
+            <text class="menor" x="270" y="44" text-anchor="middle">0 ms</text>
+            <line class="guia" x1="446.9" y1="50" x2="446.9" y2="384"/>
+            <text class="menor" x="446.9" y="44" text-anchor="middle">50</text>
+            <line class="guia" x1="623.8" y1="50" x2="623.8" y2="384"/>
+            <text class="menor" x="623.8" y="44" text-anchor="middle">100</text>
+            <text class="menor" x="16" y="66">ANTES · UNA LLAMADA POR PRODUCTO</text>
+            <text class="mono chico" x="16" y="90">POST /pedidos</text>
+            <text class="menor" x="262" y="90" text-anchor="end">124 ms</text>
+            <g class="marca" tabindex="0" data-valor="124 ms" data-etiqueta="POST /pedidos · servicio pedidos"><rect class="toque" x="10" y="75" width="740" height="22"/><rect class="serie-1 resalta" x="270" y="80" width="439.8" height="12" rx="3"/></g>
+            <text class="mono chico" x="28" y="112">comprobar-stock</text>
+            <text class="menor" x="262" y="112" text-anchor="end">124 ms</text>
+            <g class="marca" tabindex="0" data-valor="124 ms" data-etiqueta="comprobar-stock · servicio pedidos"><rect class="toque" x="10" y="97" width="740" height="22"/><rect class="serie-1 resalta" x="273.5" y="102" width="437.7" height="12" rx="3"/></g>
+            <text class="mono chico" x="40" y="134">GET</text>
+            <text class="menor" x="262" y="134" text-anchor="end">41 ms</text>
+            <g class="marca" tabindex="0" data-valor="41 ms" data-etiqueta="GET · servicio pedidos"><rect class="toque" x="10" y="119" width="740" height="22"/><rect class="serie-1 resalta" x="273.5" y="124" width="144" height="12" rx="3"/></g>
+            <text class="mono chico" x="52" y="156">GET /stock/:productoId</text>
+            <text class="menor" x="262" y="156" text-anchor="end">40 ms</text>
+            <g class="marca" tabindex="0" data-valor="40 ms" data-etiqueta="GET /stock/:productoId · servicio inventario"><rect class="toque" x="10" y="141" width="740" height="22"/><rect class="serie-2 resalta" x="273.5" y="146" width="142.2" height="12" rx="3"/></g>
+            <text class="mono chico" x="40" y="178">GET</text>
+            <text class="menor" x="262" y="178" text-anchor="end">41 ms</text>
+            <g class="marca" tabindex="0" data-valor="41 ms" data-etiqueta="GET · servicio pedidos"><rect class="toque" x="10" y="163" width="740" height="22"/><rect class="serie-1 resalta" x="418.6" y="168" width="145.4" height="12" rx="3"/></g>
+            <text class="mono chico" x="52" y="200">GET /stock/:productoId</text>
+            <text class="menor" x="262" y="200" text-anchor="end">41 ms</text>
+            <g class="marca" tabindex="0" data-valor="41 ms" data-etiqueta="GET /stock/:productoId · servicio inventario"><rect class="toque" x="10" y="185" width="740" height="22"/><rect class="serie-2 resalta" x="418.6" y="190" width="144" height="12" rx="3"/></g>
+            <text class="mono chico" x="40" y="222">GET</text>
+            <text class="menor" x="262" y="222" text-anchor="end">41 ms</text>
+            <g class="marca" tabindex="0" data-valor="41 ms" data-etiqueta="GET · servicio pedidos"><rect class="toque" x="10" y="207" width="740" height="22"/><rect class="serie-1 resalta" x="563.7" y="212" width="145.1" height="12" rx="3"/></g>
+            <text class="mono chico" x="52" y="244">GET /stock/:productoId</text>
+            <text class="menor" x="262" y="244" text-anchor="end">41 ms</text>
+            <g class="marca" tabindex="0" data-valor="41 ms" data-etiqueta="GET /stock/:productoId · servicio inventario"><rect class="toque" x="10" y="229" width="740" height="22"/><rect class="serie-2 resalta" x="567.2" y="234" width="143.7" height="12" rx="3"/></g>
+            <text class="menor" x="16" y="284">CON LA SOLUCIÓN · UNA LLAMADA POR LOTES</text>
+            <text class="mono chico" x="16" y="308">POST /pedidos</text>
+            <text class="menor" x="262" y="308" text-anchor="end">51 ms</text>
+            <g class="marca" tabindex="0" data-valor="51 ms" data-etiqueta="POST /pedidos · servicio pedidos"><rect class="toque" x="10" y="293" width="740" height="22"/><rect class="serie-1 resalta" x="270" y="298" width="180.8" height="12" rx="3"/></g>
+            <text class="mono chico" x="28" y="330">comprobar-stock</text>
+            <text class="menor" x="262" y="330" text-anchor="end">49 ms</text>
+            <g class="marca" tabindex="0" data-valor="49 ms" data-etiqueta="comprobar-stock · servicio pedidos"><rect class="toque" x="10" y="315" width="740" height="22"/><rect class="serie-1 resalta" x="273.5" y="320" width="172.7" height="12" rx="3"/></g>
+            <text class="mono chico" x="40" y="352">GET</text>
+            <text class="menor" x="262" y="352" text-anchor="end">46 ms</text>
+            <g class="marca" tabindex="0" data-valor="46 ms" data-etiqueta="GET · servicio pedidos"><rect class="toque" x="10" y="337" width="740" height="22"/><rect class="serie-1 resalta" x="273.5" y="342" width="163.1" height="12" rx="3"/></g>
+            <text class="mono chico" x="52" y="374">GET /stock</text>
+            <text class="menor" x="262" y="374" text-anchor="end">43 ms</text>
+            <g class="marca" tabindex="0" data-valor="43 ms" data-etiqueta="GET /stock · servicio inventario"><rect class="toque" x="10" y="359" width="740" height="22"/><rect class="serie-2 resalta" x="277.1" y="364" width="152.9" height="12" rx="3"/></g>
+          </svg>
+        </div>
+        <figcaption>Las dos versiones a la misma escala. Se muestra la petición más rápida de cinco en cada caso, para descartar el ruido de la máquina.</figcaption>
+      </figure>
+      <div class="tabla">
+        <table>
+          <thead><tr><th>Versión</th><th class="n">Llamadas</th><th class="n">Spans</th><th class="n">Duración</th></tr></thead>
+          <tbody>
+            <tr><td>Una llamada por producto</td><td class="n">3</td><td class="n">16</td><td class="n">124 ms</td></tr>
+            <tr><td>Una llamada por lotes</td><td class="n">1</td><td class="n">8</td><td class="n">51 ms</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>El código está en <code>modulos/m4-distribuida/pedidos.solucion.ts</code>.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ======================= SESIÓN 2 ======================= -->
+<div class="sesion">
+  <p class="sesion-etiqueta">Sesión 2 · 105 minutos</p>
+  <h2>Métricas, logs y Collector</h2>
+  <p>Al terminar tendrás una app que emite las tres señales y un Collector propio que decide qué sale de tu infraestructura.</p>
+</div>
+
+<!-- ---------- M5 ---------- -->
+<section id="m5">
+  <div class="modulo-cabecera">
+    <span class="modulo-num">M5</span>
+    <h2>Métricas</h2>
+    <label class="hecho"><input type="checkbox" id="hecho-m5" data-modulo="m5"> Hecho</label>
+    <div class="modulo-meta"><span>25 min</span><span>Grafana</span><span class="senal traza">Trazas</span><span class="senal metrica">Métricas</span></div>
+  </div>
+
+  <h3>Objetivo</h3>
+  <p>Cambiar de Jaeger a Grafana sin tocar la app, y medir el negocio: cuántos pedidos se crean y de qué importe.</p>
+
+  <h3>Pasos</h3>
+  <div class="orden"><pre><code>npm run infra:lgtm</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p class="nota">Grafana tarda alrededor de un minuto en arrancar. El comando espera hasta que está listo.</p>
+  <div class="orden"><pre><code>npm run m5</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <div class="orden"><pre><code>npm run trafico</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p>Abre <a href="http://localhost:3000">http://localhost:3000</a>, entra en <strong>Explore</strong> y elige la fuente de datos.</p>
+
+  <h3>Primero, las trazas de siempre</h3>
+  <p>Fuente de datos <strong>Tempo</strong>, pestaña <strong>Search</strong>, servicio <code>tienda</code>. Son las mismas trazas que veías en Jaeger, en otra herramienta.</p>
+  <p class="nota">El buscador de Tempo tarda unos 30 segundos en mostrar las trazas recién enviadas. Jaeger las muestra en dos.</p>
+
+  <h3>Después, las métricas</h3>
+  <p>Están definidas en <code>modulos/m5-metricas/metricas.ts</code>:</p>
+  <div class="codigo"><pre><code>const meter = metrics.getMeter('tienda');
+
+<span class="c">// Counter: un número que solo sube. Responde a «¿cuántos?».</span>
+export const pedidosCreados = meter.createCounter('tienda.pedidos.creados');
+
+<span class="c">// Histogram: reparte los valores en tramos. Responde a «¿cómo se distribuye?».</span>
+export const importePedido = meter.createHistogram('tienda.pedido.importe', { unit: 'EUR' });</code></pre></div>
+  <p>Y se usan en <code>app.ts</code> cada vez que se crea un pedido:</p>
+  <div class="codigo"><pre><code>pedidosCreados.add(1, { 'pago.metodo': metodoPago });
+importePedido.record(total, { 'pago.metodo': metodoPago });</code></pre></div>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 184" role="img" aria-label="El camino de una métrica: tu código llama 270 veces al contador, el SDK suma en memoria por método de pago y cada cinco segundos envía solo los totales, que Prometheus guarda como tres series.">
+        <defs><marker id="f5a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+        <rect class="caja" x="16" y="36" width="196" height="124" rx="7"/>
+        <text class="menor" x="28" y="58">TU CÓDIGO</text>
+        <text class="mono chico" x="28" y="86">pedidosCreados.add(1, {</text>
+        <text class="mono chico" x="41" y="103">'pago.metodo': 'bizum'</text>
+        <text class="mono chico" x="28" y="120">})</text>
+        <text class="menor" x="28" y="146">270 llamadas, una por pedido</text>
+        <line class="linea" x1="212" y1="98" x2="247" y2="98" marker-end="url(#f5a)"/>
+        <rect class="destacada" x="250" y="36" width="176" height="124" rx="7"/>
+        <text class="menor" x="262" y="58">EL SDK SUMA EN MEMORIA</text>
+        <text class="mono" x="262" y="90">tarjeta</text>
+        <text class="mono" x="414" y="90" text-anchor="end">134</text>
+        <text class="mono" x="262" y="112">bizum</text>
+        <text class="mono" x="414" y="112" text-anchor="end">104</text>
+        <text class="mono" x="262" y="134">transferencia</text>
+        <text class="mono" x="414" y="134" text-anchor="end">32</text>
+        <line class="linea" x1="426" y1="98" x2="497" y2="98" marker-end="url(#f5a)"/>
+        <text class="fuerte" x="462" y="88" text-anchor="middle">cada 5 s</text>
+        <text class="menor" x="462" y="117" text-anchor="middle">por OTLP</text>
+        <rect class="caja" x="500" y="36" width="244" height="124" rx="7"/>
+        <text class="menor" x="512" y="58">PROMETHEUS GUARDA 3 SERIES</text>
+        <text class="mono chico" x="512" y="82">tienda_pedidos_creados_total</text>
+        <text class="mono chico" x="512" y="106">pago_metodo=&quot;tarjeta&quot;</text>
+        <text class="mono chico" x="732" y="106" text-anchor="end">134</text>
+        <text class="mono chico" x="512" y="124">pago_metodo=&quot;bizum&quot;</text>
+        <text class="mono chico" x="732" y="124" text-anchor="end">104</text>
+        <text class="mono chico" x="512" y="142">pago_metodo=&quot;transferencia&quot;</text>
+        <text class="mono chico" x="732" y="142" text-anchor="end">32</text>
+      </svg>
+    </div>
+    <figcaption>Un span viaja entero. De una métrica solo viaja el total: 270 llamadas se convierten en tres números. Por eso medir todo con métricas es barato.</figcaption>
+  </figure>
+
+  <p>En Grafana, fuente de datos <strong>Prometheus</strong>, modo <strong>Code</strong>. Prueba estas consultas:</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Pregunta</th><th>Consulta</th></tr></thead>
+      <tbody>
+        <tr><td>Pedidos por método de pago</td><td><code>sum by (pago_metodo) (tienda_pedidos_creados_total)</code></td></tr>
+        <tr><td>Importe medio de un pedido</td><td><code>sum(tienda_pedido_importe_EUR_sum) / sum(tienda_pedido_importe_EUR_count)</code></td></tr>
+        <tr><td>Peticiones por código HTTP</td><td><code>sum by (http_response_status_code) (http_server_request_duration_seconds_count)</code></td></tr>
+        <tr><td>Latencia del 95 % de las peticiones</td><td><code>histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket[5m])))</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Las dos últimas no las has programado tú. Las métricas <code>http_server_…</code> las crea la auto-instrumentación.</p>
+
+  <h3>Tres instrumentos, tres formas</h3>
+  <p>El tipo de instrumento depende de cómo se comporta lo que mides. Estos son los tres del módulo, con los datos de 300 peticiones seguidas:</p>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 226" role="img" aria-label="Tres gráficos con datos reales. El counter de pedidos sube de 36 a 270 y nunca baja. El histogram reparte los 270 pedidos por tramos de importe, con un máximo de 80 entre 100 y 250 euros. El gauge del stock del monitor baja de 474 a 267 unidades.">
+        <text class="fuerte" x="16" y="20">Counter</text>
+        <text class="menor" x="16" y="37">pedidos creados, acumulado</text>
+        <line class="eje" x1="50" y1="186" x2="230" y2="186"/>
+        <text class="menor" x="44" y="190" text-anchor="end">0</text>
+        <line class="guia" x1="50" y1="142.7" x2="230" y2="142.7"/>
+        <text class="menor" x="44" y="146.7" text-anchor="end">100</text>
+        <line class="guia" x1="50" y1="99.3" x2="230" y2="99.3"/>
+        <text class="menor" x="44" y="103.3" text-anchor="end">200</text>
+        <line class="guia" x1="50" y1="56" x2="230" y2="56"/>
+        <text class="menor" x="44" y="60" text-anchor="end">300</text>
+        <polygon class="lavado-1" points="50,170.4 80,150.9 110,132.3 140,113.6 170,95 200,75.9 230,69 230,186 50,186"/>
+        <polyline class="trazo-1" points="50,170.4 80,150.9 110,132.3 140,113.6 170,95 200,75.9 230,69"/>
+        <g class="marca" tabindex="0" data-valor="36 pedidos" data-etiqueta="a los 10 s"><rect class="toque" x="35" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="50" cy="170.4" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="81 pedidos" data-etiqueta="a los 15 s"><rect class="toque" x="65" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="80" cy="150.9" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="124 pedidos" data-etiqueta="a los 20 s"><rect class="toque" x="95" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="110" cy="132.3" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="167 pedidos" data-etiqueta="a los 25 s"><rect class="toque" x="125" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="140" cy="113.6" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="210 pedidos" data-etiqueta="a los 30 s"><rect class="toque" x="155" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="170" cy="95" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="254 pedidos" data-etiqueta="a los 35 s"><rect class="toque" x="185" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="200" cy="75.9" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="270 pedidos" data-etiqueta="a los 40 s"><rect class="toque" x="215" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="230" cy="69" r="4.5"/></g>
+        <text class="menor fuerte" x="230" y="59" text-anchor="end">270</text>
+        <text class="menor" x="50" y="204" text-anchor="middle">10 s</text>
+        <text class="menor" x="140" y="204" text-anchor="middle">25 s</text>
+        <text class="menor" x="230" y="204" text-anchor="middle">40 s</text>
+        <text class="fuerte" x="270" y="20">Histogram</text>
+        <text class="menor" x="270" y="37">pedidos por tramo de importe</text>
+        <line class="eje" x1="304" y1="186" x2="484" y2="186"/>
+        <text class="menor" x="298" y="190" text-anchor="end">0</text>
+        <line class="guia" x1="304" y1="121" x2="484" y2="121"/>
+        <text class="menor" x="298" y="125" text-anchor="end">50</text>
+        <line class="guia" x1="304" y1="56" x2="484" y2="56"/>
+        <text class="menor" x="298" y="60" text-anchor="end">100</text>
+        <g class="marca" tabindex="0" data-valor="0 pedidos" data-etiqueta="de 0 a 10 €"><rect class="toque" x="304" y="56" width="22.5" height="130"/></g>
+        <text class="menor mini" x="315.3" y="200" text-anchor="middle">10</text>
+        <g class="marca" tabindex="0" data-valor="0 pedidos" data-etiqueta="de 10 a 25 €"><rect class="toque" x="326.5" y="56" width="22.5" height="130"/></g>
+        <text class="menor mini" x="337.8" y="200" text-anchor="middle">25</text>
+        <g class="marca" tabindex="0" data-valor="39 pedidos" data-etiqueta="de 25 a 50 €"><rect class="toque" x="349" y="56" width="22.5" height="130"/><path class="serie-1 resalta" d="M352.3,186 v-46.7 a4,4 0 0 1 4,-4 h8 a4,4 0 0 1 4,4 v46.7 z"/></g>
+        <text class="menor mini" x="360.3" y="200" text-anchor="middle">50</text>
+        <g class="marca" tabindex="0" data-valor="58 pedidos" data-etiqueta="de 50 a 100 €"><rect class="toque" x="371.5" y="56" width="22.5" height="130"/><path class="serie-1 resalta" d="M374.8,186 v-71.4 a4,4 0 0 1 4,-4 h8 a4,4 0 0 1 4,4 v71.4 z"/></g>
+        <text class="menor mini" x="382.8" y="200" text-anchor="middle">100</text>
+        <g class="marca" tabindex="0" data-valor="80 pedidos" data-etiqueta="de 100 a 250 €"><rect class="toque" x="394" y="56" width="22.5" height="130"/><path class="serie-1 resalta" d="M397.3,186 v-100 a4,4 0 0 1 4,-4 h8 a4,4 0 0 1 4,4 v100 z"/></g>
+        <text class="menor mini" x="405.3" y="200" text-anchor="middle">250</text>
+        <text class="menor fuerte" x="405.3" y="76" text-anchor="middle">80</text>
+        <g class="marca" tabindex="0" data-valor="45 pedidos" data-etiqueta="de 250 a 500 €"><rect class="toque" x="416.5" y="56" width="22.5" height="130"/><path class="serie-1 resalta" d="M419.8,186 v-54.5 a4,4 0 0 1 4,-4 h8 a4,4 0 0 1 4,4 v54.5 z"/></g>
+        <text class="menor mini" x="427.8" y="200" text-anchor="middle">500</text>
+        <g class="marca" tabindex="0" data-valor="48 pedidos" data-etiqueta="de 500 a 1000 €"><rect class="toque" x="439" y="56" width="22.5" height="130"/><path class="serie-1 resalta" d="M442.3,186 v-58.4 a4,4 0 0 1 4,-4 h8 a4,4 0 0 1 4,4 v58.4 z"/></g>
+        <text class="menor mini" x="450.3" y="200" text-anchor="middle">1k</text>
+        <g class="marca" tabindex="0" data-valor="0 pedidos" data-etiqueta="más de 1000 €"><rect class="toque" x="461.5" y="56" width="22.5" height="130"/></g>
+        <text class="menor mini" x="472.8" y="200" text-anchor="middle">&gt;1k</text>
+        <text class="menor" x="394" y="218" text-anchor="middle">importe hasta (€) · 1k = 1000</text>
+        <text class="fuerte" x="524" y="20">Gauge</text>
+        <text class="menor" x="524" y="37">stock del monitor</text>
+        <line class="eje" x1="558" y1="186" x2="738" y2="186"/>
+        <text class="menor" x="552" y="190" text-anchor="end">0</text>
+        <line class="guia" x1="558" y1="121" x2="738" y2="121"/>
+        <text class="menor" x="552" y="125" text-anchor="end">250</text>
+        <line class="guia" x1="558" y1="56" x2="738" y2="56"/>
+        <text class="menor" x="552" y="60" text-anchor="end">500</text>
+        <polygon class="lavado-1" points="558,62.8 588,72.4 618,83.8 648,92.4 678,103.8 708,112.9 738,116.6 738,186 558,186"/>
+        <polyline class="trazo-1" points="558,62.8 588,72.4 618,83.8 648,92.4 678,103.8 708,112.9 738,116.6"/>
+        <g class="marca" tabindex="0" data-valor="474 unidades" data-etiqueta="a los 10 s"><rect class="toque" x="543" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="558" cy="62.8" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="437 unidades" data-etiqueta="a los 15 s"><rect class="toque" x="573" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="588" cy="72.4" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="393 unidades" data-etiqueta="a los 20 s"><rect class="toque" x="603" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="618" cy="83.8" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="360 unidades" data-etiqueta="a los 25 s"><rect class="toque" x="633" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="648" cy="92.4" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="316 unidades" data-etiqueta="a los 30 s"><rect class="toque" x="663" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="678" cy="103.8" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="281 unidades" data-etiqueta="a los 35 s"><rect class="toque" x="693" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="708" cy="112.9" r="3.5"/></g>
+        <g class="marca" tabindex="0" data-valor="267 unidades" data-etiqueta="a los 40 s"><rect class="toque" x="723" y="56" width="30" height="130"/><circle class="punto-1 resalta" cx="738" cy="116.6" r="4.5"/></g>
+        <text class="menor fuerte" x="738" y="106.6" text-anchor="end">267</text>
+        <text class="menor" x="558" y="204" text-anchor="middle">10 s</text>
+        <text class="menor" x="648" y="204" text-anchor="middle">25 s</text>
+        <text class="menor" x="738" y="204" text-anchor="middle">40 s</text>
+        <text class="menor" x="140" y="218" text-anchor="middle">segundos desde el primer pedido</text>
+        <text class="menor" x="648" y="218" text-anchor="middle">segundos desde el primer pedido</text>
+      </svg>
+    </div>
+    <figcaption>Datos reales del curso. Un <strong>counter</strong> solo sube. Un <strong>histogram</strong> cuenta cuántos valores caen en cada tramo. Un <strong>gauge</strong> refleja un valor que puede bajar: por eso el stock no se puede medir con un contador.</figcaption>
+    <details class="datos">
+      <summary>Ver los datos del counter y del gauge</summary>
+      <div class="tabla"><table>
+        <thead><tr><th>Segundo</th><th class="n">Pedidos creados</th><th class="n">Stock del monitor</th></tr></thead>
+        <tbody>
+          <tr><td>10 s</td><td class="n">36</td><td class="n">474</td></tr>
+          <tr><td>15 s</td><td class="n">81</td><td class="n">437</td></tr>
+          <tr><td>20 s</td><td class="n">124</td><td class="n">393</td></tr>
+          <tr><td>25 s</td><td class="n">167</td><td class="n">360</td></tr>
+          <tr><td>30 s</td><td class="n">210</td><td class="n">316</td></tr>
+          <tr><td>35 s</td><td class="n">254</td><td class="n">281</td></tr>
+          <tr><td>40 s</td><td class="n">270</td><td class="n">267</td></tr>
+        </tbody>
+      </table></div>
+    </details>
+    <details class="datos">
+      <summary>Ver los datos del histogram</summary>
+      <div class="tabla"><table>
+        <thead><tr><th>Importe del pedido</th><th class="n">Pedidos</th></tr></thead>
+        <tbody>
+          <tr><td>De 0 a 10 €</td><td class="n">0</td></tr>
+          <tr><td>De 10 a 25 €</td><td class="n">0</td></tr>
+          <tr><td>De 25 a 50 €</td><td class="n">39</td></tr>
+          <tr><td>De 50 a 100 €</td><td class="n">58</td></tr>
+          <tr><td>De 100 a 250 €</td><td class="n">80</td></tr>
+          <tr><td>De 250 a 500 €</td><td class="n">45</td></tr>
+          <tr><td>De 500 a 1000 €</td><td class="n">48</td></tr>
+          <tr><td>Más de 1000 €</td><td class="n">0</td></tr>
+        </tbody>
+      </table></div>
+    </details>
+  </figure>
+
+  <h3>Los nombres cambian por el camino</h3>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>En tu código</th><th>En Prometheus</th><th>Por qué</th></tr></thead>
+      <tbody>
+        <tr><td><code>tienda.pedidos.creados</code></td><td><code>tienda_pedidos_creados_total</code></td><td>Los puntos pasan a guiones bajos y los contadores ganan <code>_total</code></td></tr>
+        <tr><td><code>tienda.pedido.importe</code></td><td><code>tienda_pedido_importe_EUR_bucket</code>, <code>_sum</code>, <code>_count</code></td><td>Se añade la unidad, y un histograma son tres series</td></tr>
+        <tr><td><code>pago.metodo</code></td><td><code>pago_metodo</code></td><td>Los atributos pasan a ser etiquetas</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="nota"><strong>Cuidado con los atributos de una métrica.</strong> Cada combinación de valores crea una serie nueva. <code>pago.metodo</code> tiene tres valores y es seguro. El identificador de un pedido o un email tendrían miles, y dispararían el coste.</p>
+
+  <div class="reto">
+    <h3>Reto</h3>
+    <p>Añade una métrica <code>tienda.stock.disponible</code> que indique cuántas unidades quedan de cada producto. Un contador no sirve, porque el stock sube y baja.</p>
+  </div>
+  <details class="solucion">
+    <summary>Ver la solución</summary>
+    <div>
+      <p>Se usa un <em>observable gauge</em>. No lo actualizas tú: el SDK te pregunta el valor cada vez que exporta.</p>
+      <div class="codigo"><pre><code>const stockDisponible = meter.createObservableGauge('tienda.stock.disponible');
+
+stockDisponible.addCallback((resultado) =&gt; {
+  for (const producto of productos) {
+    resultado.observe(producto.stock, { 'producto.nombre': producto.nombre });
+  }
+});</code></pre></div>
+      <div class="orden"><pre><code>npm run m5:solucion</code></pre><button class="copiar" type="button">Copiar</button></div>
+      <p>Lanza tráfico y consulta <code>tienda_stock_disponible</code> en Grafana: baja a medida que entran pedidos.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ---------- M6 ---------- -->
+<section id="m6">
+  <div class="modulo-cabecera">
+    <span class="modulo-num">M6</span>
+    <h2>Logs</h2>
+    <label class="hecho"><input type="checkbox" id="hecho-m6" data-modulo="m6"> Hecho</label>
+    <div class="modulo-meta"><span>30 min</span><span>Grafana</span><span class="senal traza">Trazas</span><span class="senal metrica">Métricas</span><span class="senal log">Logs</span></div>
+  </div>
+
+  <h3>Objetivo</h3>
+  <p>Unir los logs con las trazas. Partiendo de un log de error, llegar en un clic a la traza de esa misma petición.</p>
+
+  <h3>Pasos</h3>
+  <p>Con Grafana arrancado (<code>npm run infra:lgtm</code>):</p>
+  <div class="orden"><pre><code>npm run m6</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <div class="orden"><pre><code>npm run probar m6</code></pre><button class="copiar" type="button">Copiar</button></div>
+
+  <h3>Paso 1. El <code>trace_id</code> aparece solo</h3>
+  <p>Mira la terminal de la app. El logger es un pino normal (<code>modulos/m6-logs/logger.ts</code>), pero cada log escrito durante una petición lleva tres campos nuevos:</p>
+  <div class="salida"><pre>{"level":30, "msg":"Pedido creado", "producto":"Teclado mecánico", "total":89.9,
+ <span class="r">"trace_id":"e1bc4a6797909dcf007a7aecc1ed88ac", "span_id":"9753dc0a9d6f21d4", "trace_flags":"01"</span>}</pre></div>
+  <p>Los añade la instrumentación de pino. El log de arranque, «Tienda escuchando», no los lleva: no pertenece a ninguna petición.</p>
+
+  <h3>Paso 2. Los logs también viajan por OTLP</h3>
+  <p>El único cambio está en <code>instrumentation.ts</code>:</p>
+  <div class="codigo"><pre><code>logRecordProcessors: [
+  new BatchLogRecordProcessor({ exporter: new OTLPLogExporter() }),
+],</code></pre></div>
+  <p>En Grafana, fuente de datos <strong>Loki</strong>, modo <strong>Code</strong>:</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Qué buscas</th><th>Consulta</th></tr></thead>
+      <tbody>
+        <tr><td>Todos los logs de la tienda</td><td><code>{service_name="tienda"}</code></td></tr>
+        <tr><td>Solo los errores</td><td><code>{service_name="tienda"} | detected_level="error"</code></td></tr>
+        <tr><td>Los que contienen un texto</td><td><code>{service_name="tienda"} |= "Pago rechazado"</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 240" role="img" aria-label="Dentro de la app, la instrumentación de pino copia el trace_id del span activo en cada log. Las trazas llegan a Tempo y los logs a Loki, y el trace_id compartido enlaza un log con su traza.">
+        <defs><marker id="f6" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+        <rect class="zona" x="16" y="16" width="300" height="208" rx="9"/>
+        <text class="menor" x="28" y="38">TU APP, ATENDIENDO UNA PETICIÓN</text>
+        <rect class="caja" x="36" y="52" width="260" height="58" rx="7"/>
+        <text class="fuerte" x="48" y="75">Span activo</text>
+        <text class="mono chico" x="48" y="96">trace_id 5b2dc5a0…4347f0b</text>
+        <line class="linea" x1="166" y1="110" x2="166" y2="149" marker-end="url(#f6)"/>
+        <text class="menor" x="176" y="134">copia trace_id y span_id</text>
+        <rect class="caja" x="36" y="152" width="260" height="58" rx="7"/>
+        <text class="fuerte" x="48" y="175">Log de pino</text>
+        <text class="mono chico" x="48" y="196">logger.error('Pago rechazado')</text>
+        <line class="linea" x1="296" y1="81" x2="467" y2="81" marker-end="url(#f6)"/>
+        <text class="menor" x="382" y="71" text-anchor="middle">trazas por OTLP</text>
+        <line class="linea" x1="296" y1="181" x2="467" y2="181" marker-end="url(#f6)"/>
+        <text class="menor" x="382" y="171" text-anchor="middle">logs por OTLP</text>
+        <rect class="caja" x="470" y="52" width="274" height="58" rx="7"/>
+        <text class="fuerte" x="482" y="75">Tempo</text>
+        <text class="mono chico" x="482" y="96">traza 5b2dc5a0…4347f0b</text>
+        <rect class="caja" x="470" y="152" width="274" height="58" rx="7"/>
+        <text class="fuerte" x="482" y="175">Loki</text>
+        <text class="mono chico" x="482" y="196">Pago rechazado  trace_id=5b2dc5a0…</text>
+        <line class="enlace" x1="607" y1="112" x2="607" y2="150"/>
+        <path class="punta-acento" d="M603,118 L607,110 L611,118 z"/>
+        <path class="punta-acento" d="M603,144 L607,152 L611,144 z"/>
+        <text class="fuerte" x="618" y="135">el mismo trace_id</text>
+      </svg>
+    </div>
+    <figcaption>Por qué funciona el salto. Las trazas y los logs viajan por caminos distintos y se guardan en sitios distintos. Lo único que los une es ese identificador.</figcaption>
+  </figure>
+
+  <h3>Paso 3. Del log a la traza</h3>
+  <p>Despliega un log de error. Entre sus campos está <code>trace_id</code>, con un enlace a Tempo. Al pulsarlo se abre la traza de esa petición, con el span <code>cobrar</code> marcado como fallido.</p>
+  <p class="nota">El camino inverso también existe. Desde un span en Tempo, el enlace a los logs muestra solo los de esa traza.</p>
+
+  <div class="reto">
+    <h3>Reto</h3>
+    <p>Lanza <code>npm run trafico</code> y, usando solo Grafana, responde: ¿por qué se rechazan algunos pagos?, ¿con qué método de pago? y ¿de qué importe?</p>
+  </div>
+  <details class="solucion">
+    <summary>Ver la solución</summary>
+    <div>
+      <ol>
+        <li>En Loki, busca <code>{service_name="tienda"} | detected_level="error"</code>.</li>
+        <li>Despliega un log «Pago rechazado». El campo <code>exception_message</code> dice: «Bizum no admite pagos de más de 500 €».</li>
+        <li>Pulsa el enlace de <code>trace_id</code>. En la traza, el span <code>cobrar</code> tiene <code>pago.metodo = bizum</code> y <code>pago.importe = 747</code>.</li>
+      </ol>
+      <p>El log dice qué pasó. La traza dice dónde y con qué datos.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ---------- M7 ---------- -->
+<section id="m7">
+  <div class="modulo-cabecera">
+    <span class="modulo-num">M7</span>
+    <h2>Collector</h2>
+    <label class="hecho"><input type="checkbox" id="hecho-m7" data-modulo="m7"> Hecho</label>
+    <div class="modulo-meta"><span>25 min</span><span>Collector, Jaeger y Grafana</span><span class="senal traza">Trazas</span><span class="senal metrica">Métricas</span><span class="senal log">Logs</span></div>
+  </div>
+
+  <h3>Objetivo</h3>
+  <p>Poner un Collector propio entre la app y las herramientas, enviar a Jaeger y a Grafana a la vez, y eliminar un dato personal antes de que salga.</p>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 234" role="img" aria-label="Sin Collector, tres apps que envían a dos herramientas necesitan seis conexiones configuradas en las apps. Con Collector, cada app envía a una sola dirección y el Collector reparte.">
+        <defs><marker id="f7b" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+        <text class="fuerte" x="16" y="24">Sin Collector</text>
+        <text class="menor" x="16" y="42">cada app conoce cada herramienta</text>
+        <text class="fuerte" x="394" y="24">Con Collector</text>
+        <text class="menor" x="394" y="42">las apps solo conocen una dirección</text>
+        <rect class="caja" x="16" y="66" width="100" height="32" rx="7"/>
+        <text x="66" y="87" text-anchor="middle">pedidos</text>
+        <rect class="caja" x="394" y="66" width="100" height="32" rx="7"/>
+        <text x="444" y="87" text-anchor="middle">pedidos</text>
+        <line class="linea" x1="116" y1="82" x2="253" y2="107" marker-end="url(#f7b)"/>
+        <line class="linea" x1="116" y1="82" x2="253" y2="157" marker-end="url(#f7b)"/>
+        <line class="linea" x1="494" y1="82" x2="537" y2="132" marker-end="url(#f7b)"/>
+        <rect class="caja" x="16" y="116" width="100" height="32" rx="7"/>
+        <text x="66" y="137" text-anchor="middle">inventario</text>
+        <rect class="caja" x="394" y="116" width="100" height="32" rx="7"/>
+        <text x="444" y="137" text-anchor="middle">inventario</text>
+        <line class="linea" x1="116" y1="132" x2="253" y2="107" marker-end="url(#f7b)"/>
+        <line class="linea" x1="116" y1="132" x2="253" y2="157" marker-end="url(#f7b)"/>
+        <line class="linea" x1="494" y1="132" x2="537" y2="132" marker-end="url(#f7b)"/>
+        <rect class="caja" x="16" y="166" width="100" height="32" rx="7"/>
+        <text x="66" y="187" text-anchor="middle">pagos</text>
+        <rect class="caja" x="394" y="166" width="100" height="32" rx="7"/>
+        <text x="444" y="187" text-anchor="middle">pagos</text>
+        <line class="linea" x1="116" y1="182" x2="253" y2="107" marker-end="url(#f7b)"/>
+        <line class="linea" x1="116" y1="182" x2="253" y2="157" marker-end="url(#f7b)"/>
+        <line class="linea" x1="494" y1="182" x2="537" y2="132" marker-end="url(#f7b)"/>
+        <rect class="caja" x="256" y="91" width="100" height="32" rx="7"/>
+        <text x="306" y="112" text-anchor="middle">Jaeger</text>
+        <rect class="caja" x="664" y="91" width="80" height="32" rx="7"/>
+        <text x="704" y="112" text-anchor="middle">Jaeger</text>
+        <line class="linea" x1="620" y1="132" x2="661" y2="107" marker-end="url(#f7b)"/>
+        <rect class="caja" x="256" y="141" width="100" height="32" rx="7"/>
+        <text x="306" y="162" text-anchor="middle">Grafana</text>
+        <rect class="caja" x="664" y="141" width="80" height="32" rx="7"/>
+        <text x="704" y="162" text-anchor="middle">Grafana</text>
+        <line class="linea" x1="620" y1="132" x2="661" y2="157" marker-end="url(#f7b)"/>
+        <rect class="destacada" x="540" y="110" width="80" height="44" rx="7"/>
+        <text class="fuerte" x="580" y="137" text-anchor="middle">Collector</text>
+        <text class="menor" x="186" y="222" text-anchor="middle">6 conexiones que configurar en las apps</text>
+        <text class="menor" x="569" y="222" text-anchor="middle">3 en las apps y 2 en el Collector</text>
+      </svg>
+    </div>
+    <figcaption>En el curso hay una sola app, pero el Collector se justifica cuando hay varias. Cambiar de herramienta pasa de tocar todas las apps a tocar un archivo.</figcaption>
+  </figure>
+
+  <h3>Pasos</h3>
+  <div class="orden"><pre><code>npm run infra:collector</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <div class="orden"><pre><code>npm run m7</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <div class="orden"><pre><code>npm run trafico</code></pre><button class="copiar" type="button">Copiar</button></div>
+
+  <h3>Qué debes ver</h3>
+  <p>Las mismas trazas en <a href="http://localhost:16686">Jaeger</a> y en <a href="http://localhost:3000">Grafana</a>. La app las envía una sola vez; el Collector las reparte. Para ver lo que pasa por él:</p>
+  <div class="orden"><pre><code>npm run collector:logs</code></pre><button class="copiar" type="button">Copiar</button></div>
+
+  <h3>Cómo se configura</h3>
+  <p>Todo está en <code>infra/otelcol.yaml</code>. Un Collector es una tubería con tres tipos de piezas, conectadas en un <em>pipeline</em> por cada señal.</p>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 900 244" role="img" aria-label="Pipeline de trazas del Collector: el receptor otlp, los procesadores attributes/privacidad y batch, y los exportadores hacia Jaeger, Grafana LGTM y el registro del propio Collector.">
+        <defs>
+          <marker id="f4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker>
+        </defs>
+        <rect class="caja" x="10" y="101" width="96" height="56" rx="7"/>
+        <text class="fuerte" x="58" y="134" text-anchor="middle">Tu app</text>
+        <line class="linea" x1="106" y1="129" x2="178" y2="129" marker-end="url(#f4)"/>
+        <text class="mono" x="134" y="119" text-anchor="middle">:4318</text>
+
+        <rect class="zona" x="160" y="30" width="560" height="198" rx="9"/>
+        <text class="fuerte" x="160" y="20">Tu Collector</text>
+
+        <text class="menor" x="220" y="58" text-anchor="middle">RECEIVERS</text>
+        <text class="menor" x="410" y="58" text-anchor="middle">PROCESSORS</text>
+        <text class="menor" x="635" y="58" text-anchor="middle">EXPORTERS</text>
+
+        <rect class="caja" x="180" y="109" width="80" height="40" rx="6"/>
+        <text class="mono" x="220" y="133" text-anchor="middle">otlp</text>
+
+        <line class="linea" x1="260" y1="129" x2="280" y2="129" marker-end="url(#f4)"/>
+        <rect class="pendiente" x="282" y="109" width="170" height="40" rx="6"/>
+        <text class="mono" x="367" y="133" text-anchor="middle">attributes/privacidad</text>
+        <text class="menor en-acento" x="367" y="168" text-anchor="middle">lo activas en el reto</text>
+
+        <line class="linea" x1="452" y1="129" x2="466" y2="129" marker-end="url(#f4)"/>
+        <rect class="caja" x="468" y="109" width="64" height="40" rx="6"/>
+        <text class="mono" x="500" y="133" text-anchor="middle">batch</text>
+
+        <polyline class="linea" points="532,129 550,129 550,89 568,89" marker-end="url(#f4)"/>
+        <line class="linea" x1="532" y1="129" x2="568" y2="129" marker-end="url(#f4)"/>
+        <polyline class="linea" points="532,129 550,129 550,169 568,169" marker-end="url(#f4)"/>
+
+        <rect class="caja" x="570" y="72" width="130" height="34" rx="6"/>
+        <text class="mono" x="635" y="93" text-anchor="middle">otlp_grpc/jaeger</text>
+        <rect class="caja" x="570" y="112" width="130" height="34" rx="6"/>
+        <text class="mono" x="635" y="133" text-anchor="middle">otlp_http/lgtm</text>
+        <rect class="caja" x="570" y="152" width="130" height="34" rx="6"/>
+        <text class="mono" x="635" y="173" text-anchor="middle">debug</text>
+
+        <line class="linea" x1="700" y1="89" x2="756" y2="89" marker-end="url(#f4)"/>
+        <line class="linea" x1="700" y1="129" x2="756" y2="129" marker-end="url(#f4)"/>
+        <line class="linea" x1="700" y1="169" x2="756" y2="169" marker-end="url(#f4)"/>
+        <rect class="caja" x="758" y="72" width="132" height="34" rx="6"/>
+        <text x="824" y="94" text-anchor="middle">Jaeger</text>
+        <rect class="caja" x="758" y="112" width="132" height="34" rx="6"/>
+        <text x="824" y="134" text-anchor="middle">Grafana LGTM</text>
+        <rect class="caja" x="758" y="152" width="132" height="34" rx="6"/>
+        <text x="824" y="174" text-anchor="middle">logs del Collector</text>
+      </svg>
+    </div>
+    <figcaption>Pipeline de trazas. El orden de los procesadores importa: primero se limpia el dato y después se agrupa en lotes. Las métricas y los logs tienen su propio pipeline, que solo envía a Grafana.</figcaption>
+  </figure>
+
+  <div class="codigo"><pre><code>service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_grpc/jaeger, otlp_http/lgtm, debug]</code></pre></div>
+
+  <h3>El problema</h3>
+  <p>En Jaeger, abre una traza y pulsa el span <code>request handler - /pedidos</code>. Entre sus atributos está <code>usuario.email</code>, con el correo del cliente. La app lo guarda a propósito, como ejemplo de mala práctica: un dato personal acaba de salir hacia dos herramientas.</p>
+
+  <div class="reto">
+    <h3>Reto</h3>
+    <p>Haz que el email no salga del Collector, sin tocar la app. En <code>infra/otelcol.yaml</code> hay un procesador <code>attributes/privacidad</code> comentado. Actívalo, añádelo al pipeline de trazas y reinicia:</p>
+    <div class="orden"><pre><code>npm run collector:reiniciar</code></pre><button class="copiar" type="button">Copiar</button></div>
+    <p>Lanza tráfico de nuevo y comprueba las trazas nuevas en Jaeger.</p>
+  </div>
+  <details class="solucion">
+    <summary>Ver la solución</summary>
+    <div>
+      <div class="codigo"><pre><code>processors:
+  batch:
+    timeout: 1s
+  attributes/privacidad:
+    actions:
+      - key: usuario.email
+        action: delete
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [attributes/privacidad, batch]   <span class="c"># antes de batch</span>
+      exporters: [otlp_grpc/jaeger, otlp_http/lgtm, debug]</code></pre></div>
+      <figure>
+        <div class="lienzo">
+          <svg class="dg" viewBox="0 0 760 150" role="img" aria-label="Atributos del span al entrar y al salir del Collector: el procesador attributes/privacidad elimina usuario.email y deja intactos los demás.">
+            <defs><marker id="f7c" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+            <rect class="caja" x="16" y="16" width="280" height="118" rx="7"/>
+            <text class="menor" x="30" y="38">ENTRA EN EL COLLECTOR</text>
+            <text class="mono chico" x="30" y="64">http.route = /pedidos</text>
+            <text class="mono chico" x="30" y="86">http.response.status_code = 201</text>
+            <rect class="destacada" x="24" y="96" width="264" height="26" rx="5"/>
+            <text class="mono chico" x="30" y="113">usuario.email = ana@example.com</text>
+            <line class="linea" x1="296" y1="75" x2="461" y2="75" marker-end="url(#f7c)"/>
+            <text class="mono chico" x="379" y="64" text-anchor="middle">attributes/privacidad</text>
+            <text class="menor" x="379" y="96" text-anchor="middle">action: delete</text>
+            <rect class="caja" x="464" y="16" width="280" height="118" rx="7"/>
+            <text class="menor" x="478" y="38">SALE DEL COLLECTOR</text>
+            <text class="mono chico" x="478" y="64">http.route = /pedidos</text>
+            <text class="mono chico" x="478" y="86">http.response.status_code = 201</text>
+            <rect class="opcional" x="472" y="96" width="264" height="26" rx="5"/>
+            <text class="menor" x="478" y="113">usuario.email, eliminado</text>
+          </svg>
+        </div>
+        <figcaption>Lo que hace el procesador con cada span. La app sigue enviando el email; el Collector lo retira antes de reenviar.</figcaption>
+      </figure>
+
+      <p>También puedes arrancar el Collector con la solución ya aplicada:</p>
+      <div class="orden"><pre><code>npm run infra:collector:solucion</code></pre><button class="copiar" type="button">Copiar</button></div>
+      <p>Las trazas anteriores al cambio conservan el email. Las nuevas ya no lo tienen.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ---------- M8 ---------- -->
+<section id="m8">
+  <div class="modulo-cabecera">
+    <span class="modulo-num">M8</span>
+    <h2>Sampling y buenas prácticas</h2>
+    <label class="hecho"><input type="checkbox" id="hecho-m8" data-modulo="m8"> Hecho</label>
+    <div class="modulo-meta"><span>20 min</span><span>Collector, Jaeger y Grafana</span><span class="senal traza">Trazas</span></div>
+  </div>
+
+  <h3>Objetivo</h3>
+  <p>Guardar todas las trazas es caro y casi nunca hace falta. Vas a quedarte con una parte, primero a ciegas y después eligiendo las que importan.</p>
+
+  <h3>Head sampling: decide la app</h3>
+  <p>Con el Collector arrancado (<code>npm run infra:collector</code>), para la app y arráncala así:</p>
+  <div class="orden"><pre><code>npm run m8</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <div class="orden"><pre><code>npm run trafico -- 40</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p>Es la misma app del módulo 7. El único cambio es <code>env/sampling.env</code>:</p>
+  <div class="codigo"><pre><code>OTEL_TRACES_SAMPLER=parentbased_traceidratio
+OTEL_TRACES_SAMPLER_ARG=0.25</code></pre></div>
+
+  <h3>Qué debes ver</h3>
+  <p>En Jaeger, alrededor de 10 trazas de las 40 peticiones. El número varía en cada ejecución porque es una probabilidad: en la prueba del curso salieron 7.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Señal</th><th>Qué ocurre con el sampling al 25 %</th></tr></thead>
+      <tbody>
+        <tr><td><span class="senal traza">Trazas</span></td><td>Se guarda 1 de cada 4. Las que se guardan llegan completas.</td></tr>
+        <tr><td><span class="senal metrica">Métricas</span></td><td>No les afecta. Con 7 trazas guardadas, el contador marcó los 31 pedidos creados.</td></tr>
+        <tr><td><span class="senal log">Logs</span></td><td>Se guardan todos. Los de trazas descartadas llevan <code>trace_flags: "00"</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="nota"><strong>El inconveniente:</strong> la decisión se toma al empezar la petición, sin saber cómo va a acabar. La traza del único error del día puede ser una de las descartadas.</p>
+
+  <h3>Tail sampling: decide el Collector</h3>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 206" role="img" aria-label="Línea de tiempo de una traza que termina con error. El head sampling decide al principio, antes de saber que fallará. El tail sampling decide cinco segundos después de que termine, con la traza completa.">
+        <defs><marker id="f8a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" orient="auto"><path class="punta" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+        <text class="menor" x="120" y="38">una petición y sus spans</text>
+        <rect class="apagada" x="120" y="50" width="360" height="12" rx="3"/>
+        <rect class="apagada" x="150" y="70" width="120" height="12" rx="3"/>
+        <rect class="apagada" x="280" y="90" width="190" height="12" rx="3"/>
+        <circle class="critico" cx="478" cy="96" r="7"/>
+        <path class="aspa" d="M475,93 l6,6 M481,93 l-6,6"/>
+        <text class="menor" x="492" y="100">termina con error</text>
+        <line class="eje" x1="480" y1="128" x2="640" y2="128"/>
+        <text class="menor" x="560" y="121" text-anchor="middle">decision_wait: 5 s</text>
+        <line class="linea" x1="60" y1="150" x2="722" y2="150" marker-end="url(#f8a)"/>
+        <text class="menor" x="722" y="142" text-anchor="end">tiempo</text>
+        <line class="enlace" x1="120" y1="44" x2="120" y2="150"/>
+        <circle class="punto-acento" cx="120" cy="150" r="5"/>
+        <line class="enlace" x1="640" y1="44" x2="640" y2="150"/>
+        <circle class="punto-acento" cx="640" cy="150" r="5"/>
+        <text class="fuerte" x="120" y="176" text-anchor="middle">Head sampling decide aquí</text>
+        <text class="menor" x="120" y="194" text-anchor="middle">en la app, sin saber qué pasará</text>
+        <text class="fuerte" x="626" y="176" text-anchor="middle">Tail sampling decide aquí</text>
+        <text class="menor" x="626" y="194" text-anchor="middle">en el Collector, con la traza completa</text>
+      </svg>
+    </div>
+    <figcaption>La diferencia está en el momento. Quien decide al principio no puede saber que la petición va a fallar.</figcaption>
+  </figure>
+  <p>El Collector espera a que la traza termine y decide con ella delante. Esta configuración, en <code>infra/otelcol.tail-sampling.yaml</code>, conserva las trazas con error y las que tardan más de 200 ms:</p>
+  <div class="codigo"><pre><code>tail_sampling:
+  decision_wait: 5s
+  policies:
+    - name: con-errores
+      type: status_code
+      status_code: { status_codes: [ERROR] }
+    - name: lentas
+      type: latency
+      latency: { threshold_ms: 200 }</code></pre></div>
+  <div class="orden"><pre><code>npm run infra:collector:tail</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <div class="orden"><pre><code>npm run m7</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <div class="orden"><pre><code>npm run trafico -- 40</code></pre><button class="copiar" type="button">Copiar</button></div>
+  <p>En Jaeger quedan solo los pagos rechazados y las transferencias, que tardan 300 ms. Los pedidos rápidos y correctos se descartan. Puede colarse la primera petición tras arrancar la app, que es lenta porque Node aún está calentando.</p>
+  <p class="nota">Las trazas tardan unos segundos más en aparecer: el Collector espera <code>decision_wait</code> antes de decidir.</p>
+
+  <figure>
+    <div class="lienzo">
+      <svg class="dg" viewBox="0 0 760 244" role="img" aria-label="Las 40 peticiones de cada prueba, en orden de llegada. Con head sampling se guardaron 7 trazas al azar y ninguna de las 5 con error. Con tail sampling se guardaron 16: las 7 con error y las 9 lentas.">
+        <text class="fuerte" x="16" y="22">Head sampling al 25 %</text>
+        <text class="menor" x="16" y="40">7 de 40 guardadas · ninguno de los 5 errores</text>
+        <text class="fuerte" x="394" y="22">Tail sampling: errores y lentas</text>
+        <text class="menor" x="394" y="40">16 de 40 guardadas · los 7 errores y las 9 lentas</text>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 1 · pedido rápido y correcto"><rect class="toque" x="26" y="60" width="30" height="30"/><circle class="t-resto no resalta" cx="41" cy="75" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 2 · transferencia lenta"><rect class="toque" x="56" y="60" width="30" height="30"/><rect class="t-lenta no resalta" x="64.5" y="68.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 3 · transferencia lenta"><rect class="toque" x="86" y="60" width="30" height="30"/><rect class="t-lenta no resalta" x="94.5" y="68.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 4 · pedido rápido y correcto"><rect class="toque" x="116" y="60" width="30" height="30"/><circle class="t-resto si resalta" cx="131" cy="75" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 5 · transferencia lenta"><rect class="toque" x="146" y="60" width="30" height="30"/><rect class="t-lenta no resalta" x="154.5" y="68.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 6 · pedido rápido y correcto"><rect class="toque" x="176" y="60" width="30" height="30"/><circle class="t-resto no resalta" cx="191" cy="75" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 7 · pedido rápido y correcto"><rect class="toque" x="206" y="60" width="30" height="30"/><circle class="t-resto no resalta" cx="221" cy="75" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 8 · pago rechazado"><rect class="toque" x="236" y="60" width="30" height="30"/><path class="t-error no resalta" d="M251,67 L259,75 L251,83 L243,75 z"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 9 · pedido rápido y correcto"><rect class="toque" x="266" y="60" width="30" height="30"/><circle class="t-resto no resalta" cx="281" cy="75" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 10 · producto que no existe"><rect class="toque" x="296" y="60" width="30" height="30"/><circle class="t-resto no resalta" cx="311" cy="75" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 11 · pedido rápido y correcto"><rect class="toque" x="26" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="41" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 12 · pedido rápido y correcto"><rect class="toque" x="56" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="71" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 13 · pedido rápido y correcto"><rect class="toque" x="86" y="90" width="30" height="30"/><circle class="t-resto si resalta" cx="101" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 14 · pago rechazado"><rect class="toque" x="116" y="90" width="30" height="30"/><path class="t-error no resalta" d="M131,97 L139,105 L131,113 L123,105 z"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 15 · pedido rápido y correcto"><rect class="toque" x="146" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="161" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 16 · pago rechazado"><rect class="toque" x="176" y="90" width="30" height="30"/><path class="t-error no resalta" d="M191,97 L199,105 L191,113 L183,105 z"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 17 · pedido rápido y correcto"><rect class="toque" x="206" y="90" width="30" height="30"/><circle class="t-resto si resalta" cx="221" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 18 · pedido rápido y correcto"><rect class="toque" x="236" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="251" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 19 · pedido rápido y correcto"><rect class="toque" x="266" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="281" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 20 · producto que no existe"><rect class="toque" x="296" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="311" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 21 · pedido rápido y correcto"><rect class="toque" x="26" y="120" width="30" height="30"/><circle class="t-resto si resalta" cx="41" cy="135" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 22 · pedido rápido y correcto"><rect class="toque" x="56" y="120" width="30" height="30"/><circle class="t-resto no resalta" cx="71" cy="135" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 23 · pedido rápido y correcto"><rect class="toque" x="86" y="120" width="30" height="30"/><circle class="t-resto no resalta" cx="101" cy="135" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 24 · pago rechazado"><rect class="toque" x="116" y="120" width="30" height="30"/><path class="t-error no resalta" d="M131,127 L139,135 L131,143 L123,135 z"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 25 · pedido rápido y correcto"><rect class="toque" x="146" y="120" width="30" height="30"/><circle class="t-resto no resalta" cx="161" cy="135" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 26 · transferencia lenta"><rect class="toque" x="176" y="120" width="30" height="30"/><rect class="t-lenta no resalta" x="184.5" y="128.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 27 · transferencia lenta"><rect class="toque" x="206" y="120" width="30" height="30"/><rect class="t-lenta si resalta" x="214.5" y="128.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 28 · transferencia lenta"><rect class="toque" x="236" y="120" width="30" height="30"/><rect class="t-lenta no resalta" x="244.5" y="128.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 29 · pedido rápido y correcto"><rect class="toque" x="266" y="120" width="30" height="30"/><circle class="t-resto no resalta" cx="281" cy="135" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 30 · producto que no existe"><rect class="toque" x="296" y="120" width="30" height="30"/><circle class="t-resto no resalta" cx="311" cy="135" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 31 · pedido rápido y correcto"><rect class="toque" x="26" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="41" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 32 · pago rechazado"><rect class="toque" x="56" y="150" width="30" height="30"/><path class="t-error no resalta" d="M71,157 L79,165 L71,173 L63,165 z"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 33 · pedido rápido y correcto"><rect class="toque" x="86" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="101" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 34 · pedido rápido y correcto"><rect class="toque" x="116" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="131" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 35 · pedido rápido y correcto"><rect class="toque" x="146" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="161" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 36 · pedido rápido y correcto"><rect class="toque" x="176" y="150" width="30" height="30"/><circle class="t-resto si resalta" cx="191" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 37 · pedido rápido y correcto"><rect class="toque" x="206" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="221" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 38 · pedido rápido y correcto"><rect class="toque" x="236" y="150" width="30" height="30"/><circle class="t-resto si resalta" cx="251" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 39 · pedido rápido y correcto"><rect class="toque" x="266" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="281" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 40 · producto que no existe"><rect class="toque" x="296" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="311" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 1 · pedido rápido y correcto"><rect class="toque" x="404" y="60" width="30" height="30"/><circle class="t-resto no resalta" cx="419" cy="75" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 2 · pedido rápido y correcto"><rect class="toque" x="434" y="60" width="30" height="30"/><circle class="t-resto no resalta" cx="449" cy="75" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 3 · transferencia lenta"><rect class="toque" x="464" y="60" width="30" height="30"/><rect class="t-lenta si resalta" x="472.5" y="68.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 4 · pedido rápido y correcto"><rect class="toque" x="494" y="60" width="30" height="30"/><circle class="t-resto no resalta" cx="509" cy="75" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 5 · pedido rápido y correcto"><rect class="toque" x="524" y="60" width="30" height="30"/><circle class="t-resto no resalta" cx="539" cy="75" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 6 · transferencia lenta"><rect class="toque" x="554" y="60" width="30" height="30"/><rect class="t-lenta si resalta" x="562.5" y="68.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 7 · transferencia lenta"><rect class="toque" x="584" y="60" width="30" height="30"/><rect class="t-lenta si resalta" x="592.5" y="68.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 8 · pago rechazado"><rect class="toque" x="614" y="60" width="30" height="30"/><path class="t-error si resalta" d="M629,67 L637,75 L629,83 L621,75 z"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 9 · transferencia lenta"><rect class="toque" x="644" y="60" width="30" height="30"/><rect class="t-lenta si resalta" x="652.5" y="68.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 10 · producto que no existe"><rect class="toque" x="674" y="60" width="30" height="30"/><circle class="t-resto no resalta" cx="689" cy="75" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 11 · pedido rápido y correcto"><rect class="toque" x="404" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="419" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 12 · transferencia lenta"><rect class="toque" x="434" y="90" width="30" height="30"/><rect class="t-lenta si resalta" x="442.5" y="98.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 13 · transferencia lenta"><rect class="toque" x="464" y="90" width="30" height="30"/><rect class="t-lenta si resalta" x="472.5" y="98.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 14 · pedido rápido y correcto"><rect class="toque" x="494" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="509" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 15 · pedido rápido y correcto"><rect class="toque" x="524" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="539" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 16 · pago rechazado"><rect class="toque" x="554" y="90" width="30" height="30"/><path class="t-error si resalta" d="M569,97 L577,105 L569,113 L561,105 z"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 17 · pedido rápido y correcto"><rect class="toque" x="584" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="599" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 18 · pedido rápido y correcto"><rect class="toque" x="614" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="629" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 19 · pedido rápido y correcto"><rect class="toque" x="644" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="659" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 20 · producto que no existe"><rect class="toque" x="674" y="90" width="30" height="30"/><circle class="t-resto no resalta" cx="689" cy="105" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 21 · pedido rápido y correcto"><rect class="toque" x="404" y="120" width="30" height="30"/><circle class="t-resto no resalta" cx="419" cy="135" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 22 · transferencia lenta"><rect class="toque" x="434" y="120" width="30" height="30"/><rect class="t-lenta si resalta" x="442.5" y="128.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 23 · pedido rápido y correcto"><rect class="toque" x="464" y="120" width="30" height="30"/><circle class="t-resto no resalta" cx="479" cy="135" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 24 · pago rechazado"><rect class="toque" x="494" y="120" width="30" height="30"/><path class="t-error si resalta" d="M509,127 L517,135 L509,143 L501,135 z"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 25 · pago rechazado"><rect class="toque" x="524" y="120" width="30" height="30"/><path class="t-error si resalta" d="M539,127 L547,135 L539,143 L531,135 z"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 26 · pago rechazado"><rect class="toque" x="554" y="120" width="30" height="30"/><path class="t-error si resalta" d="M569,127 L577,135 L569,143 L561,135 z"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 27 · pedido rápido y correcto"><rect class="toque" x="584" y="120" width="30" height="30"/><circle class="t-resto no resalta" cx="599" cy="135" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 28 · transferencia lenta"><rect class="toque" x="614" y="120" width="30" height="30"/><rect class="t-lenta si resalta" x="622.5" y="128.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 29 · pedido rápido y correcto"><rect class="toque" x="644" y="120" width="30" height="30"/><circle class="t-resto no resalta" cx="659" cy="135" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 30 · producto que no existe"><rect class="toque" x="674" y="120" width="30" height="30"/><circle class="t-resto no resalta" cx="689" cy="135" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 31 · pago rechazado"><rect class="toque" x="404" y="150" width="30" height="30"/><path class="t-error si resalta" d="M419,157 L427,165 L419,173 L411,165 z"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 32 · pago rechazado"><rect class="toque" x="434" y="150" width="30" height="30"/><path class="t-error si resalta" d="M449,157 L457,165 L449,173 L441,165 z"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 33 · pedido rápido y correcto"><rect class="toque" x="464" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="479" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 34 · pedido rápido y correcto"><rect class="toque" x="494" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="509" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Guardada" data-etiqueta="petición 35 · transferencia lenta"><rect class="toque" x="524" y="150" width="30" height="30"/><rect class="t-lenta si resalta" x="532.5" y="158.5" width="13" height="13" rx="2"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 36 · pedido rápido y correcto"><rect class="toque" x="554" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="569" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 37 · pedido rápido y correcto"><rect class="toque" x="584" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="599" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 38 · pedido rápido y correcto"><rect class="toque" x="614" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="629" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 39 · pedido rápido y correcto"><rect class="toque" x="644" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="659" cy="165" r="6.5"/></g>
+        <g class="marca" data-valor="Descartada" data-etiqueta="petición 40 · producto que no existe"><rect class="toque" x="674" y="150" width="30" height="30"/><circle class="t-resto no resalta" cx="689" cy="165" r="6.5"/></g>
+        <circle class="t-resto si" cx="24" cy="204" r="6.5"/>
+        <text class="menor" x="38" y="208">Rápida y sin error</text>
+        <rect class="t-lenta si" x="167.5" y="197.5" width="13" height="13" rx="2"/>
+        <text class="menor" x="188" y="208">Lenta (transferencia)</text>
+        <path class="t-error si" d="M340,196 L348,204 L340,212 L332,204 z"/>
+        <text class="menor" x="356" y="208">Con error (pago rechazado)</text>
+        <circle class="t-resto si" cx="24" cy="230" r="6.5"/>
+        <text class="menor" x="38" y="234">Rellena: traza guardada</text>
+        <circle class="t-resto no" cx="204" cy="230" r="6.5"/>
+        <text class="menor" x="218" y="234">Hueca: traza descartada</text>
+      </svg>
+    </div>
+    <figcaption>Las 40 peticiones de cada prueba del curso, en orden de llegada y leídas por filas. Son dos ejecuciones distintas, por eso el reparto de tipos no coincide. Con head sampling se perdieron los cinco errores.</figcaption>
+    <details class="datos">
+      <summary>Ver estos datos en una tabla</summary>
+      <div class="tabla"><table>
+        <thead><tr><th>Tipo de petición</th><th class="n">Head: guardadas</th><th class="n">Tail: guardadas</th></tr></thead>
+        <tbody>
+          <tr><td>Rápida y sin error</td><td class="n">6 de 29</td><td class="n">0 de 24</td></tr>
+          <tr><td>Lenta (transferencia)</td><td class="n">1 de 6</td><td class="n">9 de 9</td></tr>
+          <tr><td>Con error (pago rechazado)</td><td class="n">0 de 5</td><td class="n">7 de 7</td></tr>
+          <tr><td><strong>Total</strong></td><td class="n"><strong>7 de 40</strong></td><td class="n"><strong>16 de 40</strong></td></tr>
+        </tbody>
+      </table></div>
+    </details>
+  </figure>
+
+  <div class="tabla">
+    <table>
+      <thead><tr><th></th><th>Head sampling</th><th>Tail sampling</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Quién decide</strong></td><td>El SDK, en la app</td><td>El Collector</td></tr>
+        <tr><td><strong>Cuándo</strong></td><td>Al empezar la traza</td><td>Al terminarla</td></tr>
+        <tr><td><strong>Con qué criterio</strong></td><td>Probabilidad</td><td>Errores, duración, atributos</td></tr>
+        <tr><td><strong>Coste</strong></td><td>Mínimo: lo descartado ni se genera</td><td>El Collector guarda las trazas en memoria mientras decide</td></tr>
+        <tr><td><strong>Se configura en</strong></td><td>Variables de entorno</td><td>El archivo del Collector</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Buenas prácticas para llevarte</h3>
+  <ul>
+    <li><strong>Define siempre <code>service.name</code>.</strong> Sin él, tu servicio aparece como <code>unknown_service</code>.</li>
+    <li><strong>Nombra los spans por la operación, no por el dato.</strong> <code>GET /productos/:id</code>, nunca <code>GET /productos/42</code>.</li>
+    <li><strong>Usa las convenciones semánticas</strong> cuando existan (<code>http.request.method</code>) y un prefijo propio para tu negocio (<code>pedido.</code>, <code>cupon.</code>).</li>
+    <li><strong>Ningún dato personal ni secreto en atributos.</strong> Y un Collector que los elimine, por si se cuela alguno.</li>
+    <li><strong>Atributos de métricas con pocos valores posibles.</strong> Nunca identificadores ni emails.</li>
+    <li><strong>Cierra siempre el span</strong> en un <code>finally</code>, y marca los errores con <code>recordException</code> y <code>setStatus</code>.</li>
+    <li><strong>Llama a <code>sdk.shutdown()</code></strong> al parar el proceso, o perderás los últimos datos.</li>
+    <li><strong>Fija las versiones</strong> de los paquetes de OpenTelemetry. Cambian a menudo.</li>
+  </ul>
+
+  <h3>Lo que este curso no cubre</h3>
+  <p>Instrumentación en el navegador, despliegue en Kubernetes con el Operator, perfiles de rendimiento y otros lenguajes. Los conceptos son los mismos: spans, atributos, recursos, OTLP y Collector.</p>
+</section>
+
+<!-- ======================= CONSULTA ======================= -->
+<div class="sesion">
+  <p class="sesion-etiqueta">Consulta</p>
+  <h2>Para cuando algo no sale</h2>
+</div>
+
+<section id="sin-datos">
+  <h2>No veo mis datos</h2>
+  <p style="margin-top:12px">Revisa en este orden. Casi siempre es uno de los cuatro primeros.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Comprueba</th><th>Cómo</th></tr></thead>
+      <tbody>
+        <tr><td>La infraestructura está arrancada</td><td><code>docker ps</code> muestra contenedores <code>otel-curso-…</code></td></tr>
+        <tr><td>La app está escuchando</td><td>Si dice que no puede abrir el puerto, hay otro módulo arrancado: ciérralo con <kbd>Ctrl</kbd> + <kbd>C</kbd></td></tr>
+        <tr><td>Has hecho alguna petición</td><td>Sin tráfico no hay telemetría: <code>npm run probar m2</code> o <code>npm run trafico</code></td></tr>
+        <tr><td>Has esperado lo suficiente</td><td>Jaeger: 2 s. Métricas: 5 s. Buscador de Tempo: 30 s</td></tr>
+        <tr><td>El rango de tiempo es el correcto</td><td>En Grafana, arriba a la derecha: «Last 15 minutes»</td></tr>
+        <tr><td>Buscas el servicio correcto</td><td><code>tienda</code> en casi todo el curso; <code>pedidos</code> e <code>inventario</code> en el M4</td></tr>
+        <tr><td>El sampling no está activo</td><td><code>npm run m8</code> descarta 3 de cada 4 trazas a propósito</td></tr>
+        <tr><td>El equipo sigue bien configurado</td><td><code>npm run doctor</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="nota"><strong>En macOS,</strong> entrar en la carpeta del curso con el nombre en minúsculas hace que <code>docker compose</code> no encuentre la configuración del Collector. Los comandos <code>npm run infra:…</code> lo evitan: úsalos en lugar de llamar a <code>docker compose</code> directamente.</p>
+</section>
+
+<section id="api">
+  <h2>API vigente</h2>
+  <p style="margin-top:12px">OpenTelemetry para JavaScript cambió de API en la versión 2 del SDK y eliminará la antigua en la 3. Muchos tutoriales, y las respuestas de muchos asistentes de IA, siguen usando la columna de la izquierda.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Si ves esto, está desfasado</th><th>Usa esto</th></tr></thead>
+      <tbody>
+        <tr><td><code>new Resource({…})</code></td><td><code>resourceFromAttributes({…})</code></td></tr>
+        <tr><td><code>SemanticResourceAttributes.SERVICE_NAME</code></td><td><code>ATTR_SERVICE_NAME</code></td></tr>
+        <tr><td><code>metricReader: …</code></td><td><code>metricReaders: […]</code></td></tr>
+        <tr><td><code>spanProcessor: …</code></td><td><code>spanProcessors: […]</code></td></tr>
+        <tr><td><code>new SimpleSpanProcessor(exporter)</code></td><td><code>new SimpleSpanProcessor({ exporter })</code></td></tr>
+        <tr><td><code>@opentelemetry/sdk-trace-node</code></td><td><code>@opentelemetry/sdk-trace</code></td></tr>
+        <tr><td><code>@opentelemetry/exporter-jaeger</code></td><td>Exportador OTLP: Jaeger lo entiende directamente</td></tr>
+        <tr><td>Collector: exportadores <code>otlp</code>, <code>otlphttp</code>, <code>logging</code></td><td><code>otlp_grpc</code>, <code>otlp_http</code>, <code>debug</code></td></tr>
+        <tr><td>Imagen <code>jaegertracing/all-in-one</code></td><td><code>jaegertracing/jaeger</code> (versión 2)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Versiones con las que se ha probado el curso</h3>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Componente</th><th>Versión</th></tr></thead>
+      <tbody>
+        <tr><td>Node.js</td><td>24.12</td></tr>
+        <tr><td><code>@opentelemetry/sdk-node</code></td><td>0.222.0</td></tr>
+        <tr><td><code>@opentelemetry/sdk-trace</code>, <code>sdk-metrics</code>, <code>resources</code></td><td>2.11.0</td></tr>
+        <tr><td><code>@opentelemetry/auto-instrumentations-node</code></td><td>0.80.0</td></tr>
+        <tr><td>Express / pino</td><td>5.2.1 / 10.3.1</td></tr>
+        <tr><td>Jaeger</td><td>2.21.0</td></tr>
+        <tr><td>Grafana LGTM</td><td>0.34.0</td></tr>
+        <tr><td>OpenTelemetry Collector (contrib)</td><td>0.161.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="instructor">
+  <h2>Para quien imparte</h2>
+  <div class="tabla" style="margin-top:12px">
+    <table>
+      <thead><tr><th>Sesión 1</th><th class="n">Min</th><th>Sesión 2</th><th class="n">Min</th></tr></thead>
+      <tbody>
+        <tr><td>M0 Qué es OpenTelemetry</td><td class="n">15</td><td>Repaso de la sesión 1</td><td class="n">5</td></tr>
+        <tr><td>M1 Tu primer span</td><td class="n">10</td><td>M5 Métricas</td><td class="n">25</td></tr>
+        <tr><td>M2 Auto-instrumentación</td><td class="n">25</td><td>M6 Logs</td><td class="n">30</td></tr>
+        <tr><td>M3 Spans manuales</td><td class="n">30</td><td>M7 Collector</td><td class="n">25</td></tr>
+        <tr><td>M4 Traza distribuida</td><td class="n">25</td><td>M8 Sampling</td><td class="n">20</td></tr>
+        <tr><td><strong>Total</strong></td><td class="n"><strong>105</strong></td><td><strong>Total</strong></td><td class="n"><strong>105</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul>
+    <li><strong>Pide la preparación por adelantado.</strong> Descargar 2 GB de imágenes con la wifi del aula consume media sesión.</li>
+    <li><strong>La sesión 1 es autocontenida.</strong> Si solo hay una sesión, los alumnos se llevan el ciclo completo de trazas.</li>
+    <li><strong>El M3 es el centro del curso.</strong> Si hay que recortar, recorta del M0 y no de aquí.</li>
+    <li><strong>Arranca Grafana durante el repaso</strong> de la sesión 2. Tarda alrededor de un minuto, y algo más en equipos modestos.</li>
+    <li><strong>El tail sampling funciona mejor como demostración</strong> proyectada que como ejercicio: exige reiniciar la infraestructura.</li>
+    <li><strong>Los puertos 8181 y 8182</strong> se eligieron porque el 8080 y el 3000 suelen estar ocupados en equipos de desarrollo.</li>
+  </ul>
+</section>
+
+<p class="pie">Los tiempos, salidas, consultas y gráficos de esta guía proceden de ejecuciones reales del código del curso. La única excepción es la figura del problema en el módulo 0, que es un ejemplo ilustrativo.</p>
+
+</main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ----- Botones de copiar -----
+  document.querySelectorAll('.copiar').forEach(function (boton) {
+    boton.addEventListener('click', function () {
+      var codigo = boton.parentElement.querySelector('code');
+      var texto = codigo.textContent;
+      var avisar = function (mensaje) {
+        boton.textContent = mensaje;
+        setTimeout(function () { boton.textContent = 'Copiar'; }, 1600);
+      };
+      var seleccionar = function () {
+        var rango = document.createRange();
+        rango.selectNodeContents(codigo);
+        var seleccion = window.getSelection();
+        seleccion.removeAllRanges();
+        seleccion.addRange(rango);
+        avisar('Seleccionado');
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function () { avisar('Copiado'); }, seleccionar);
+      } else {
+        seleccionar();
+      }
+    });
+  });
+
+  // ----- Progreso por módulo (se guarda solo en este navegador) -----
+  var CLAVE = 'otel-practico-progreso';
+  var casillas = Array.prototype.slice.call(document.querySelectorAll('.hecho input'));
+  var contador = document.getElementById('progreso');
+
+  function leer() {
+    try { return JSON.parse(localStorage.getItem(CLAVE)) || {}; } catch (e) { return {}; }
+  }
+  function guardar(estado) {
+    try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) { /* sin almacenamiento: no pasa nada */ }
+  }
+  function pintar() {
+    var hechos = 0;
+    casillas.forEach(function (casilla) {
+      var enlace = document.querySelector('.indice a[data-modulo="' + casilla.dataset.modulo + '"]');
+      if (enlace) enlace.classList.toggle('completado', casilla.checked);
+      if (casilla.checked) hechos++;
+    });
+    contador.textContent = hechos + ' de ' + casillas.length + ' módulos hechos';
+  }
+
+  var guardado = leer();
+  casillas.forEach(function (casilla) {
+    casilla.checked = !!guardado[casilla.dataset.modulo];
+    casilla.addEventListener('change', function () {
+      var estado = leer();
+      estado[casilla.dataset.modulo] = casilla.checked;
+      guardar(estado);
+      pintar();
+    });
+  });
+  pintar();
+
+  // ----- Globo de ayuda de los gráficos -----
+  // Amplía lo que ya está escrito en el gráfico o en su tabla: nunca es la única forma de leer un valor.
+  var globo = document.getElementById('globo');
+  function mostrar(marca, x, y) {
+    globo.querySelector('strong').textContent = marca.dataset.valor;
+    globo.querySelector('span').textContent = marca.dataset.etiqueta;
+    globo.hidden = false;
+    var ancho = globo.offsetWidth, alto = globo.offsetHeight;
+    var izquierda = Math.min(Math.max(8, x + 14), window.innerWidth - ancho - 8);
+    var arriba = y - alto - 12 < 8 ? y + 18 : y - alto - 12;
+    globo.style.left = izquierda + 'px';
+    globo.style.top = arriba + 'px';
+  }
+  function ocultar() { globo.hidden = true; }
+  document.querySelectorAll('.marca').forEach(function (marca) {
+    marca.addEventListener('pointermove', function (e) { mostrar(marca, e.clientX, e.clientY); });
+    marca.addEventListener('pointerleave', ocultar);
+    marca.addEventListener('focus', function () {
+      var caja = marca.getBoundingClientRect();
+      mostrar(marca, caja.left + caja.width / 2, caja.top);
+    });
+    marca.addEventListener('blur', ocultar);
+  });
+  window.addEventListener('scroll', ocultar, { passive: true });
+
+  // ----- Índice: plegado en pantallas estrechas y sección actual resaltada -----
+  var indice = document.getElementById('indice');
+  var estrecha = window.matchMedia('(max-width: 900px)');
+  function ajustarIndice() { indice.open = !estrecha.matches; }
+  ajustarIndice();
+  if (estrecha.addEventListener) estrecha.addEventListener('change', ajustarIndice);
+  indice.querySelectorAll('a').forEach(function (enlace) {
+    enlace.addEventListener('click', function () { if (estrecha.matches) indice.open = false; });
+  });
+
+  if ('IntersectionObserver' in window) {
+    var enlaces = {};
+    indice.querySelectorAll('a').forEach(function (enlace) { enlaces[enlace.getAttribute('href').slice(1)] = enlace; });
+    var observador = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (entrada) {
+        if (!entrada.isIntersecting) return;
+        Object.keys(enlaces).forEach(function (id) { enlaces[id].classList.remove('actual'); });
+        if (enlaces[entrada.target.id]) enlaces[entrada.target.id].classList.add('actual');
+      });
+    }, { rootMargin: '-10% 0px -75% 0px' });
+    document.querySelectorAll('main section[id]').forEach(function (seccion) { observador.observe(seccion); });
+  }
+})();
+</script>

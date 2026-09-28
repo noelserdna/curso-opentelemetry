@@ -1,0 +1,60 @@
+{
+  "name": "curso-opentelemetry",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Curso práctico de OpenTelemetry con Node.js y TypeScript",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "doctor": "tsx scripts/doctor.ts",
+    "trafico": "tsx scripts/trafico.ts",
+    "probar": "tsx scripts/probar.ts",
+    "typecheck": "tsc --noEmit",
+    "infra:down": "tsx scripts/infra.ts down",
+    "infra:jaeger": "tsx scripts/infra.ts jaeger",
+    "infra:lgtm": "tsx scripts/infra.ts lgtm",
+    "infra:collector": "tsx scripts/infra.ts collector",
+    "infra:collector:solucion": "tsx scripts/infra.ts collector solucion",
+    "infra:collector:tail": "tsx scripts/infra.ts collector tail-sampling",
+    "collector:reiniciar": "tsx scripts/infra.ts reiniciar-collector",
+    "collector:logs": "tsx scripts/infra.ts logs-collector",
+    "m1": "tsx modulos/m1-primer-span/main.ts",
+    "m1:solucion": "tsx modulos/m1-primer-span/solucion.ts",
+    "m2:zero": "tsx --env-file=env/zero-code.env --require @opentelemetry/auto-instrumentations-node/register modulos/m2-auto/app.ts",
+    "m2:consola": "tsx --env-file=env/consola.env --import ./modulos/m2-auto/instrumentation.ts modulos/m2-auto/app.ts",
+    "m2": "tsx --import ./modulos/m2-auto/instrumentation.ts modulos/m2-auto/app.ts",
+    "m3": "tsx --import ./modulos/m3-spans-manuales/instrumentation.ts modulos/m3-spans-manuales/app.ts",
+    "m3:solucion": "tsx --env-file=env/solucion.env --import ./modulos/m3-spans-manuales/instrumentation.ts modulos/m3-spans-manuales/app.ts",
+    "m4:inventario": "tsx --env-file=env/inventario.env --import ./modulos/m4-distribuida/instrumentation.ts modulos/m4-distribuida/inventario.ts",
+    "m4:pedidos": "tsx --env-file=env/pedidos.env --import ./modulos/m4-distribuida/instrumentation.ts modulos/m4-distribuida/pedidos.ts",
+    "m4:pedidos:solucion": "tsx --env-file=env/pedidos.env --import ./modulos/m4-distribuida/instrumentation.ts modulos/m4-distribuida/pedidos.solucion.ts",
+    "m5": "tsx --import ./modulos/m5-metricas/instrumentation.ts modulos/m5-metricas/app.ts",
+    "m5:solucion": "tsx --env-file=env/solucion.env --import ./modulos/m5-metricas/instrumentation.ts modulos/m5-metricas/app.ts",
+    "m6": "tsx --import ./modulos/m6-logs/instrumentation.ts modulos/m6-logs/app.ts",
+    "m7": "tsx --import ./modulos/m7-collector/instrumentation.ts modulos/m7-collector/app.ts",
+    "m8": "tsx --env-file=env/sampling.env --import ./modulos/m7-collector/instrumentation.ts modulos/m7-collector/app.ts"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "1.9.1",
+    "@opentelemetry/auto-instrumentations-node": "0.80.0",
+    "@opentelemetry/exporter-logs-otlp-http": "0.222.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "0.222.0",
+    "@opentelemetry/exporter-trace-otlp-http": "0.222.0",
+    "@opentelemetry/resources": "2.11.0",
+    "@opentelemetry/sdk-logs": "0.222.0",
+    "@opentelemetry/sdk-metrics": "2.11.0",
+    "@opentelemetry/sdk-node": "0.222.0",
+    "@opentelemetry/sdk-trace": "2.11.0",
+    "@opentelemetry/semantic-conventions": "1.43.0",
+    "express": "5.2.1",
+    "pino": "10.3.1"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "24.19.0",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3"
+  }
+}

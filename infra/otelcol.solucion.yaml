@@ -1,0 +1,49 @@
+# Módulo 7 — Solución del reto.
+# Igual que otelcol.yaml, con el procesador `attributes/privacidad` activado
+# y colocado en el pipeline de trazas. La app no cambia.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+
+  # SOLUCIÓN: borra el email del cliente de todos los spans.
+  attributes/privacidad:
+    actions:
+      - key: usuario.email
+        action: delete
+
+exporters:
+  otlp_grpc/jaeger:
+    endpoint: jaeger-backend:4317
+    tls:
+      insecure: true
+
+  otlp_http/lgtm:
+    endpoint: http://lgtm-backend:4318
+
+  debug:
+    verbosity: basic
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      # SOLUCIÓN: el orden importa; primero se limpia y luego se agrupa en lotes.
+      processors: [attributes/privacidad, batch]
+      exporters: [otlp_grpc/jaeger, otlp_http/lgtm, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_http/lgtm]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_http/lgtm]

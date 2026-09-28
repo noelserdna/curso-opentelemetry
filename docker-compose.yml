@@ -1,0 +1,60 @@
+# Infraestructura del curso. Cada etapa es un perfil y solo una está activa a la vez,
+# porque todas escuchan OTLP en los mismos puertos (4317 gRPC y 4318 HTTP).
+#
+#   npm run infra:jaeger      Sesión 1 (M2-M4): solo trazas
+#   npm run infra:lgtm        Sesión 2 (M5-M6): trazas, métricas y logs en Grafana
+#   npm run infra:collector   Sesión 2 (M7-M8): Collector propio + Jaeger + Grafana
+#   npm run infra:down        Parar todo
+#
+# Los datos se guardan en memoria: al cambiar de etapa se empieza de cero.
+name: otel-curso
+
+services:
+  # --- Etapa 1: Jaeger recibe OTLP directamente de la app ---
+  jaeger:
+    image: jaegertracing/jaeger:2.21.0
+    profiles: [jaeger]
+    ports:
+      - "16686:16686" # UI de Jaeger
+      - "4317:4317"
+      - "4318:4318"
+
+  # --- Etapa 2: Grafana LGTM (Loki + Grafana + Tempo + Prometheus en una imagen) ---
+  lgtm:
+    image: grafana/otel-lgtm:0.34.0
+    profiles: [lgtm]
+    healthcheck: # la comprobación viene en la imagen; aquí solo ajustamos el ritmo
+      interval: 5s
+      retries: 36 # hasta 3 minutos para arrancar en equipos lentos
+    ports:
+      - "3000:3000" # UI de Grafana
+      - "4317:4317"
+      - "4318:4318"
+
+  # --- Etapa 3: la app habla con nuestro Collector y él reparte ---
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.161.0
+    profiles: [collector]
+    # Por defecto usa infra/otelcol.yaml; `npm run infra:collector:solucion` y `:tail` eligen otro.
+    command: ["--config=/etc/otelcol-curso/${OTELCOL_CONFIG:-otelcol.yaml}"]
+    volumes:
+      - ./infra:/etc/otelcol-curso:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on: [jaeger-backend, lgtm-backend]
+
+  jaeger-backend:
+    image: jaegertracing/jaeger:2.21.0
+    profiles: [collector]
+    ports:
+      - "16686:16686"
+
+  lgtm-backend:
+    image: grafana/otel-lgtm:0.34.0
+    profiles: [collector]
+    healthcheck: # la comprobación viene en la imagen; aquí solo ajustamos el ritmo
+      interval: 5s
+      retries: 36 # hasta 3 minutos para arrancar en equipos lentos
+    ports:
+      - "3000:3000"

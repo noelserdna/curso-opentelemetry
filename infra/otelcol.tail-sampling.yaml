@@ -1,0 +1,63 @@
+# Módulo 8 — Tail sampling (demo del instructor).
+# El head sampling decide al EMPEZAR la traza, a ciegas: puede tirar justo la del error.
+# El tail sampling decide al TERMINAR, con la traza completa delante:
+# aquí nos quedamos con todas las que tienen un error o tardan más de 200 ms.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+
+  attributes/privacidad:
+    actions:
+      - key: usuario.email
+        action: delete
+
+  tail_sampling:
+    # Cuánto espera a que lleguen todos los spans de una traza antes de decidir.
+    # Por defecto son 30 s; lo bajamos para verlo en clase.
+    decision_wait: 5s
+    # Una traza se conserva si cumple CUALQUIERA de las políticas.
+    policies:
+      - name: con-errores
+        type: status_code
+        status_code:
+          status_codes: [ERROR]
+      - name: lentas
+        type: latency
+        latency:
+          threshold_ms: 200
+
+exporters:
+  otlp_grpc/jaeger:
+    endpoint: jaeger-backend:4317
+    tls:
+      insecure: true
+
+  otlp_http/lgtm:
+    endpoint: http://lgtm-backend:4318
+
+  debug:
+    verbosity: basic
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [attributes/privacidad, tail_sampling, batch]
+      exporters: [otlp_grpc/jaeger, otlp_http/lgtm, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_http/lgtm]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_http/lgtm]
