@@ -4,8 +4,10 @@ Curso en dos sesiones para programadores. Instrumentas una mini tienda paso a pa
 trazas, métricas y logs en herramientas reales: primero en la terminal, después en Jaeger, en
 Grafana y, por último, detrás de tu propio Collector.
 
-La explicación de cada módulo, con sus gráficos, está en la **guía del curso**: abre
-`guia/index.html` en tu navegador. Este archivo es la chuleta de comandos.
+**Guía del curso: https://noelserdna.github.io/curso-opentelemetry/**
+
+La guía explica cada módulo paso a paso, con gráficos hechos con datos reales del curso.
+Este archivo es la chuleta de comandos.
 
 ```sh
 git clone https://github.com/noelserdna/curso-opentelemetry.git
@@ -108,3 +110,6 @@ infra/      Configuración del Collector
 scripts/    doctor, generador de tráfico y arranque de la infraestructura
 guia/       Guía del curso
 ```
+
+La guía se publica sola: cada cambio en `guia/index.html` que llega a la rama `main` se
+despliega en GitHub Pages en un par de minutos.

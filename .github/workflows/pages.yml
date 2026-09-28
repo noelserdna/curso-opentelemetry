@@ -1,0 +1,41 @@
+# Publica la guía del curso en GitHub Pages cada vez que cambia.
+name: Publicar la guía
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "guia/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si llegan dos cambios seguidos, solo se publica el último.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Construir la página
+        run: node guia/construir.mjs _site
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - id: despliegue
+        uses: actions/deploy-pages@v5
