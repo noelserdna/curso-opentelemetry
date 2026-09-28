@@ -113,3 +113,23 @@ guia/       Guía del curso
 
 La guía se publica sola: cada cambio en `guia/index.html` que llega a la rama `main` se
 despliega en GitHub Pages en un par de minutos.
+
+## Licencia
+
+Puedes usar, copiar y adaptar este curso, también con fines comerciales, siempre que
+menciones a su autor.
+
+| Qué | Licencia |
+|---|---|
+| La guía, sus figuras y los textos | [CC BY 4.0](LICENSE) |
+| El código (`modulos/`, `scripts/`, `infra/`, `env/` y la configuración) | [MIT](LICENSE-CODE) |
+
+### Cómo mencionarlo
+
+> «OpenTelemetry práctico», de Andrés León.
+> https://github.com/noelserdna/curso-opentelemetry. Licencia CC BY 4.0.
+
+Si has adaptado el material, indícalo: «Adaptado de…». Si reutilizas el código, conserva el
+aviso de copyright de `LICENSE-CODE`.
+
+© 2026 Andrés León

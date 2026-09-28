@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Curso práctico de OpenTelemetry con Node.js y TypeScript",
+  "author": "Andrés León",
+  "license": "(MIT AND CC-BY-4.0)",
+  "homepage": "https://noelserdna.github.io/curso-opentelemetry/",
   "type": "commonjs",
   "engines": {
     "node": ">=22"
